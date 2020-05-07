@@ -33,16 +33,6 @@ public class AuthenticatedUser extends BaseModel {
     private Date lastCheckedTime;
     @Column(name = "bot_status")
     private int botStatus;
-//    @ManyToMany(fetch = FetchType.EAGER,
-//            cascade = {
-//                    CascadeType.PERSIST,
-//                    CascadeType.MERGE
-//            })
-//    @JoinTable(
-//            name = "user_friend",
-//            joinColumns = @JoinColumn(name = "follower_id"),
-//            inverseJoinColumns = @JoinColumn(name = "friend_id"))
-//    private List<Friend> friends;
 
     public Long getTwitterUserId() {
         return twitterUserId;

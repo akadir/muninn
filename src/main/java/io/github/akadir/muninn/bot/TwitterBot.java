@@ -10,6 +10,9 @@ import twitter4j.TwitterFactory;
  * Time: 23:24
  */
 public class TwitterBot {
+    private TwitterBot() {
+    }
+
     public static Twitter getTwitter() {
         TwitterFactory twitterFactory = new TwitterFactory();
         Twitter twitter = twitterFactory.getInstance();
