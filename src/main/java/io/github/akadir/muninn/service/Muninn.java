@@ -121,7 +121,7 @@ public class Muninn extends Thread {
                 friendList.add(f);
                 currentFriendIdSet.add(friendId);
                 userFriendsIDs.put(friendId, f);
-                //RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
+                RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
             } catch (TwitterException e) {
                 logger.error("Error while getting user information: {}", friendId, e);
 
