@@ -1,8 +1,9 @@
 package io.github.akadir.muninn.model;
 
-import io.github.akadir.muninn.enumeration.RelationStatus;
-
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * @author akadir
@@ -18,15 +19,12 @@ public class UserFriend extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "friend_id")
     private Friend friend;
-    @Column(name = "is_relation_active")
-    private int isRelationActive;
 
     public static UserFriend from(AuthenticatedUser user, Friend friend) {
         UserFriend userFriend = new UserFriend();
 
         userFriend.setFollower(user);
         userFriend.setFriend(friend);
-        userFriend.setIsRelationActive(RelationStatus.ACTIVE.getCode());
 
         return userFriend;
     }
@@ -47,11 +45,4 @@ public class UserFriend extends BaseModel {
         this.friend = friend;
     }
 
-    public int getIsRelationActive() {
-        return isRelationActive;
-    }
-
-    public void setIsRelationActive(int isRelationActive) {
-        this.isRelationActive = isRelationActive;
-    }
 }
