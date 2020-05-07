@@ -16,4 +16,6 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             "join UserFriend uf on f.id = uf.friend.id " +
             "join AuthenticatedUser au on au.id = uf.follower.id where au.id = ?1")
     List<Friend> findUserFriends(Long userId);
+
+    List<Friend> findAllByTwitterUserIdIn(List<Long> twitterUserIdList);
 }

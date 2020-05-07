@@ -9,7 +9,8 @@ public enum VmOption {
     TELEGRAM_BOT_NAME("telegramBotName"),
     TELEGRAM_TOKEN("telegramToken"),
     TWITTER_CONSUMER_KEY("twitterConsumerKey"),
-    TWITTER_CONSUMER_SECRET("twitterConsumerSecret");
+    TWITTER_CONSUMER_SECRET("twitterConsumerSecret"),
+    RECHECK_PERIOD("reCheckPeriod");
 
     VmOption(String key) {
         this.key = key;

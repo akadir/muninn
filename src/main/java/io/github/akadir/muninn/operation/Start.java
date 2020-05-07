@@ -20,6 +20,7 @@ import twitter4j.User;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
+import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -138,6 +139,7 @@ public class Start implements Operation {
             authenticatedUser.setTwitterUserId(auth.getId());
             authenticatedUser.setTwitterToken(authAccessToken.getToken());
             authenticatedUser.setTwitterTokenSecret(authAccessToken.getTokenSecret());
+            authenticatedUser.setLastNotifiedTime(new Date());
 
             authenticatedUser = authenticatedUserService.saveAuthenticatedUser(authenticatedUser);
             logger.info("AuthenticatedUser updated: {}", authenticatedUser);

@@ -18,7 +18,6 @@
     <logger name="twitter4j" level="OFF"/>
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.hibernate" level="INFO"/>
-    <logger name="com.kadir.twitterbots.ratelimithandler.handler" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="stdout"/>

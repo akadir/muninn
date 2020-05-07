@@ -1,7 +1,6 @@
 package io.github.akadir.muninn.operation;
 
 import io.github.akadir.muninn.enumeration.TelegramOption;
-import io.github.akadir.muninn.service.AuthenticatedUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +19,13 @@ import java.util.Map;
 public class OperationFactory {
     private final Logger logger = LoggerFactory.getLogger(OperationFactory.class);
     private final Map<String, Operation> operationMap;
-    private final AuthenticatedUserService authenticatedUserService;
 
 
     @Autowired
     public OperationFactory(@Qualifier("start") Operation loginOperation,
                             @Qualifier("stop") Operation logoutOperation,
-                            @Qualifier("help") Operation helpOperation,
-                            AuthenticatedUserService authenticatedUserService) {
+                            @Qualifier("help") Operation helpOperation) {
         this.operationMap = new HashMap<>();
-        this.authenticatedUserService = authenticatedUserService;
 
         operationMap.put(TelegramOption.LOGIN.getOption(), loginOperation);
         operationMap.put(TelegramOption.LOGOUT.getOption(), logoutOperation);

@@ -12,5 +12,5 @@ public enum MuninnMessage {
     BOT_DEACTIVATED,
     MISSING_OR_INCORRECT_PIN,
     ERROR,
-    ACCOUNT_NOT_FOUND;
+    ACCOUNT_NOT_FOUND
 }

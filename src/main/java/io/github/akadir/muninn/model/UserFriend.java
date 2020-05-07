@@ -1,5 +1,7 @@
 package io.github.akadir.muninn.model;
 
+import io.github.akadir.muninn.enumeration.RelationStatus;
+
 import javax.persistence.*;
 
 /**
@@ -18,6 +20,16 @@ public class UserFriend extends BaseModel {
     private Friend friend;
     @Column(name = "is_relation_active")
     private int isRelationActive;
+
+    public static UserFriend from(AuthenticatedUser user, Friend friend) {
+        UserFriend userFriend = new UserFriend();
+
+        userFriend.setFollower(user);
+        userFriend.setFriend(friend);
+        userFriend.setIsRelationActive(RelationStatus.ACTIVE.getCode());
+
+        return userFriend;
+    }
 
     public AuthenticatedUser getFollower() {
         return follower;

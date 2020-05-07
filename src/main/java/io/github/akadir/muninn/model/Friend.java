@@ -6,6 +6,7 @@ import twitter4j.User;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 /**
@@ -38,8 +39,8 @@ public class Friend extends BaseModel {
         friend.username = user.getScreenName();
         friend.name = user.getName();
         friend.bio = user.getDescription();
-        friend.profilePicUrl = user.getBiggerProfileImageURL();
-        friend.isAccountActive = Integer.valueOf(TwitterAccountStatus.ACTIVE.getCode());
+        friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
+        friend.isAccountActive = Integer.parseInt(TwitterAccountStatus.ACTIVE.getCode());
         friend.lastChecked = new Date();
 
         return friend;
@@ -100,4 +101,5 @@ public class Friend extends BaseModel {
     public void setLastChecked(Date lastChecked) {
         this.lastChecked = lastChecked;
     }
+
 }

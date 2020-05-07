@@ -17,14 +17,4 @@ public enum TwitterAccountStatus {
     public String getCode() {
         return code;
     }
-
-    public TwitterAccountStatus from(int code) {
-        for (TwitterAccountStatus twitterAccountStatus : TwitterAccountStatus.values()) {
-            if (twitterAccountStatus.code.equals(code)) {
-                return twitterAccountStatus;
-            }
-        }
-
-        return null;
-    }
 }
