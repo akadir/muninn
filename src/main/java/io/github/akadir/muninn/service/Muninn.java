@@ -107,6 +107,7 @@ public class Muninn extends Thread {
             try {
                 User twitterFriend = twitter.showUser(friendId);
                 Friend f;
+
                 if (userFriendsIDs.containsKey(friendId)) {
                     f = userFriendsIDs.get(friendId);
                     changeSets.addAll(checkUpdates(f, twitterFriend));
@@ -118,12 +119,17 @@ public class Muninn extends Thread {
                     UserFriend userFriend = UserFriend.from(user, f);
                     newFollowings.add(userFriend);
                 }
+
                 friendList.add(f);
                 currentFriendIdSet.add(friendId);
                 userFriendsIDs.put(friendId, f);
                 RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
             } catch (TwitterException e) {
                 logger.error("Error while getting user information: {}", friendId, e);
+
+                if (e.getStatusCode() == 64) {
+                    throw new AccountSuspendedException();
+                }
 
                 if (userFriendsIDs.containsKey(friendId) && (e.getStatusCode() == 50 || e.getStatusCode() == 63)) {
                     Friend f = userFriendsIDs.get(friendId);
@@ -132,27 +138,13 @@ public class Muninn extends Thread {
                     f.setLastChecked(new Date());
                     friendList.add(f);
                     userFriendsIDs.put(friendId, f);
-                } else if (e.getStatusCode() == 64) {
-                    throw new AccountSuspendedException();
                 }
             }
         }
 
-
-        if (!friendList.isEmpty()) {
-            logger.info("Found {} checked friends", friendList.size());
-            friendService.saveAllFriends(user, friendList);
-        } else {
-            logger.info("All friends were already checked");
-        }
-
-        if (!newFollowings.isEmpty()) {
-            friendService.saveNewFollowings(user, newFollowings);
-        }
-
-        if (!changeSets.isEmpty()) {
-            changeSetService.saveAll(user, changeSets);
-        }
+        friendService.saveAllFriends(user, friendList);
+        friendService.saveNewFollowings(user, newFollowings);
+        changeSetService.saveAll(user, changeSets);
     }
 
     private Twitter getTwitter() {

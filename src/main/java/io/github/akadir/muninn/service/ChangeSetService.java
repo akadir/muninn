@@ -27,6 +27,9 @@ public class ChangeSetService {
     }
 
     public List<ChangeSet> saveAll(AuthenticatedUser user, List<ChangeSet> changeSets) {
+        if (changeSets.isEmpty()) {
+            return changeSets;
+        }
         changeSets = changeSetRepository.saveAll(changeSets);
         logger.info("{} ChangeSets saved for user friends: {}", changeSets.size(), user.getId());
         return changeSets;

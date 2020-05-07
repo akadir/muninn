@@ -40,6 +40,10 @@ public class FriendService {
     }
 
     public void saveAllFriends(AuthenticatedUser user, List<Friend> friends) {
+        if (friends.isEmpty()) {
+            return;
+        }
+
         List<Friend> alreadySavedFriends = friendRepository.findAllByTwitterUserIdIn(friends.stream()
                 .map(Friend::getTwitterUserId).collect(Collectors.toList()));
         if (!alreadySavedFriends.isEmpty()) {
@@ -55,10 +59,14 @@ public class FriendService {
         }
 
         friends = friendRepository.saveAll(friends);
-        logger.info("{} friends  saved or updated for user with id: {}", friends.size(), user.getId());
+        logger.info("{} friends saved or updated for user with id: {}", friends.size(), user.getId());
     }
 
     public void saveNewFollowings(AuthenticatedUser user, List<UserFriend> newFollowings) {
+        if (newFollowings.isEmpty()) {
+            return;
+        }
+
         newFollowings = userFriendRepository.saveAll(newFollowings);
         logger.info("{} new followings saved for user: {} ", newFollowings.size(), user.getId());
     }
