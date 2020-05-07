@@ -184,7 +184,7 @@ public class Muninn extends Thread {
         long hoursSinceLastCheck = ChronoUnit.HOURS.between(lastChecked, now);
         if (hoursSinceLastCheck < 20) {
             logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
-            //return listOfChanges;
+            return listOfChanges;
         }
 
         if (!u.getDescription().equals(f.getBio())) {
