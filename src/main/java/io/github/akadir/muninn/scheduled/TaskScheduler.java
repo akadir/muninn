@@ -6,7 +6,7 @@ import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
-import io.github.akadir.muninn.service.Muninn;
+import io.github.akadir.muninn.scheduled.task.Muninn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

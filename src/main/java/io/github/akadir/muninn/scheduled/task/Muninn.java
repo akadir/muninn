@@ -1,4 +1,4 @@
-package io.github.akadir.muninn.service;
+package io.github.akadir.muninn.scheduled.task;
 
 import com.kadir.twitterbots.ratelimithandler.handler.RateLimitHandler;
 import com.kadir.twitterbots.ratelimithandler.process.ApiProcessType;
@@ -7,6 +7,8 @@ import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
 import io.github.akadir.muninn.model.*;
+import io.github.akadir.muninn.service.ChangeSetService;
+import io.github.akadir.muninn.service.FriendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import twitter4j.IDs;
