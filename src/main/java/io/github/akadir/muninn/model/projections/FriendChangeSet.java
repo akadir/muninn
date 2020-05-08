@@ -2,8 +2,6 @@ package io.github.akadir.muninn.model.projections;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.List;
-
 /**
  * @author akadir
  * Date: 7.05.2020
