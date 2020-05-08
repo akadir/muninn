@@ -72,7 +72,7 @@ public class Huginn extends Thread {
         StringBuilder messageBuilder = new StringBuilder();
 
         Map<String, List<FriendChangeSet>> changeSetMap = changeSetList.stream()
-                .collect(Collectors.groupingBy(FriendChangeSet::getTwitterUserId, LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(FriendChangeSet::getUsername, LinkedHashMap::new, Collectors.toList()));
 
         for (Map.Entry<String, List<FriendChangeSet>> entry : changeSetMap.entrySet()) {
             String username = entry.getKey();
