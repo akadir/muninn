@@ -1,12 +1,13 @@
 package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
+import io.github.akadir.muninn.helper.DateTimeHelper;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
+import io.github.akadir.muninn.scheduled.task.Muninn;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
-import io.github.akadir.muninn.scheduled.task.Muninn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,12 @@ public class TaskScheduler {
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
-                Muninn muninn = new Muninn(user, friendService, changeSetService);
-                muninn.start();
-                threads.add(muninn);
+                long sinceLastChecked = DateTimeHelper.getTimeDifferenceInHoursSince(user.getLastCheckedTime());
+                if (sinceLastChecked > 6) {
+                    Muninn muninn = new Muninn(user, friendService, changeSetService);
+                    muninn.start();
+                    threads.add(muninn);
+                }
             }
 
             for (Muninn m : threads) {

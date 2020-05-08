@@ -6,6 +6,7 @@ import io.github.akadir.muninn.bot.TwitterBot;
 import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
+import io.github.akadir.muninn.helper.DateTimeHelper;
 import io.github.akadir.muninn.model.*;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
@@ -17,9 +18,6 @@ import twitter4j.TwitterException;
 import twitter4j.User;
 import twitter4j.auth.AccessToken;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -166,11 +164,8 @@ public class Muninn extends Thread {
     private List<ChangeSet> checkUpdates(Friend f, User u) {
         List<ChangeSet> listOfChanges = new ArrayList<>();
 
+        long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
 
-        LocalDateTime now = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
-        LocalDateTime lastChecked = LocalDateTime.ofInstant(f.getLastChecked().toInstant(), ZoneId.systemDefault());
-
-        long hoursSinceLastCheck = ChronoUnit.HOURS.between(lastChecked, now);
         if (hoursSinceLastCheck < 20) {
             logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
             return listOfChanges;
