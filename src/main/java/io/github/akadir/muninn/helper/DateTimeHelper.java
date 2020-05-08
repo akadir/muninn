@@ -11,7 +11,14 @@ import java.util.Date;
  * Time: 00:27
  */
 public class DateTimeHelper {
+    private DateTimeHelper() {
+    }
+
     public static long getTimeDifferenceInHoursSince(Date since) {
+        if (since == null) {
+            return Long.MAX_VALUE;
+        }
+
         LocalDateTime now = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
         LocalDateTime lastChecked = LocalDateTime.ofInstant(since.toInstant(), ZoneId.systemDefault());
 
