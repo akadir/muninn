@@ -10,10 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static io.github.akadir.muninn.helper.Constants.TELEGRAM_MESSAGE_CHARACTER_LIMIT;
 
 /**
  * @author akadir
@@ -69,7 +72,7 @@ public class Huginn extends Thread {
             return;
         }
 
-        StringBuilder messageBuilder = new StringBuilder();
+        List<String> messages = new ArrayList<>();
 
         Map<String, List<FriendChangeSet>> changeSetMap = changeSetList.stream()
                 .collect(Collectors.groupingBy(FriendChangeSet::getUsername, LinkedHashMap::new, Collectors.toList()));
@@ -93,27 +96,50 @@ public class Huginn extends Thread {
             }
 
 
-            generateMessage(messageBuilder, username, uniqueChanges);
+            generateMessage(username, uniqueChanges, messages);
         }
 
-        logger.info("Message generated: {}", messageBuilder);
+        logger.info("Generated message count: {}", messages.size());
 
-        SendMessage message = new SendMessage()
-                .setChatId(user.getTelegramChatId())
-                .enableMarkdownV2(true)
-                .disableWebPagePreview()
-                .setText(messageBuilder.toString());
+        if (!messages.isEmpty()) {
+            for (String message : messages) {
+                SendMessage telegramMessage = new SendMessage()
+                        .setChatId(user.getTelegramChatId())
+                        .enableHtml(true)
+                        .disableWebPagePreview()
+                        .setText(message);
 
-        telegramBot.notify(message);
+                telegramBot.notify(telegramMessage);
+                logger.info("Message send: {}", message);
+            }
+
+            authenticatedUserService.updateUserNotifiedTime(user);
+        }
     }
 
-    private void generateMessage(StringBuilder messageBuilder, String username, Map<Integer, Change> uniqueChanges) {
-        messageBuilder.append("\n\n*").append(username).append("* has changed: ");
+    private void generateMessage(String username, Map<Integer, Change> uniqueChanges, List<String> messages) {
+        StringBuilder mb = new StringBuilder("\n\n<a href=\"https://twitter.com/")
+                .append(username).append("\">").append(username).append("</a> has changed: \n");
 
         for (Map.Entry<Integer, Change> entry : uniqueChanges.entrySet()) {
-            messageBuilder.append("\n").append(entry.getValue());
+            mb.append("\n\n").append(entry.getValue());
+        }
+
+        mb.append("\n\n--------");
+
+        String message = mb.toString();
+
+        if (messages.isEmpty()) {
+            messages.add(message);
+        } else {
+            String lastMessage = messages.get(messages.size() - 1);
+
+            if (lastMessage.length() + message.length() > TELEGRAM_MESSAGE_CHARACTER_LIMIT) {
+                messages.add(message);
+            } else {
+                lastMessage = lastMessage + message;
+                messages.set(messages.size() - 1, lastMessage);
+            }
         }
     }
-
-
 }

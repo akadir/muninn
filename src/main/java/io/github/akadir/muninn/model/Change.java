@@ -1,7 +1,11 @@
 package io.github.akadir.muninn.model;
 
 import io.github.akadir.muninn.enumeration.ChangeType;
+import io.github.akadir.muninn.helper.DiffHelper;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
+
+import static io.github.akadir.muninn.helper.Constants.NEW_TAG;
+import static io.github.akadir.muninn.helper.Constants.OLD_TAG;
 
 /**
  * @author akadir
@@ -51,19 +55,20 @@ public class Change {
     public String toString() {
         ChangeType changeType = ChangeType.of(type);
 
-        String trimmedOldData = oldData;//.replaceAll("\\.", "\\\\.");
-        String trimmedNewData = newData;//.replaceAll("\\.", "\\\\.");
-
         if (ChangeType.BIO == changeType) {
-            return "bio from " + trimmedOldData + " to " + trimmedNewData;
+            String change = DiffHelper.generateDiff(oldData, newData);
+            return "<b>Bio:</b> " + change;
         } else if (ChangeType.ACCOUNT_STATUS == changeType) {
-            return "account from " + trimmedOldData + " to " + trimmedNewData;
+            return "<b>Status:</b>\n" + OLD_TAG + oldData + "\n" + NEW_TAG + newData;
         } else if (ChangeType.USERNAME == changeType) {
-            return "username from " + trimmedOldData + " to " + trimmedNewData;
+            String change = DiffHelper.generateDiff(oldData, newData);
+            return "<b>Username:</b>  " + change;
         } else if (ChangeType.NAME == changeType) {
-            return "name from " + trimmedOldData + " to " + trimmedNewData;
+            String change = DiffHelper.generateDiff(oldData, newData);
+            return "<b>Name:</b> " + change;
         } else if (ChangeType.PP == changeType) {
-            return "profile pic from [old](" + trimmedOldData + ") to [new](" + trimmedNewData + ")";
+            return "<b>Profile Pic:</b> from <a href=\"" + oldData +
+                    "\"><i>old</i></a> to <a href=\"" + newData + "\"><i>new</i></a>";
         }
 
         return "";

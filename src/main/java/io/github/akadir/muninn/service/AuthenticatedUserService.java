@@ -56,4 +56,14 @@ public class AuthenticatedUserService {
         Date oneHourBefore = calendar.getTime();
         return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), oneHourBefore);
     }
+
+    public void updateUserNotifiedTime(AuthenticatedUser user) {
+        user.setLastNotifiedTime(new Date());
+        authenticatedUserRepository.save(user);
+    }
+
+    public void updateLastCheckedTime(AuthenticatedUser user) {
+        user.setLastCheckedTime(new Date());
+        authenticatedUserRepository.save(user);
+    }
 }

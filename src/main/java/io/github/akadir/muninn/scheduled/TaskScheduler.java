@@ -41,7 +41,7 @@ public class TaskScheduler {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 60000 * 60 * 12, initialDelay = 5 * 1000)
+    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 10)
     public void checkFriends() throws InterruptedException {
         List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
         List<Muninn> threads = new ArrayList<>();
@@ -49,12 +49,13 @@ public class TaskScheduler {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
                 Muninn muninn = new Muninn(user, friendService, changeSetService);
-                //muninn.start();
+                muninn.start();
                 threads.add(muninn);
             }
 
             for (Muninn m : threads) {
                 m.join();
+                authenticatedUserService.updateLastCheckedTime(m.getUser());
                 Huginn huginn = new Huginn(m.getUser(), authenticatedUserService, friendService, telegramBot);
                 huginn.start();
             }
