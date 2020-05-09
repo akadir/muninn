@@ -3,8 +3,8 @@ package io.github.akadir.muninn.scheduled.task;
 import com.kadir.twitterbots.ratelimithandler.handler.RateLimitHandler;
 import com.kadir.twitterbots.ratelimithandler.process.ApiProcessType;
 import io.github.akadir.muninn.bot.TwitterBot;
+import io.github.akadir.muninn.checker.UpdateChecker;
 import io.github.akadir.muninn.config.ConfigParams;
-import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
 import io.github.akadir.muninn.helper.DateTimeHelper;
@@ -34,11 +34,14 @@ public class Muninn extends Thread {
     private final AuthenticatedUser user;
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
+    private final Set<UpdateChecker> updateCheckerSet;
 
-    public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService) {
+    public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
+                  Set<UpdateChecker> updateCheckerSet) {
         this.user = user;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
+        this.updateCheckerSet = updateCheckerSet;
     }
 
     @Override
@@ -173,34 +176,9 @@ public class Muninn extends Thread {
     private List<ChangeSet> checkUpdates(Friend f, User u) {
         List<ChangeSet> listOfChanges = new ArrayList<>();
 
-        if (!u.getDescription().equals(f.getBio())) {
-            logger.info("User: {} has changed bio from: {} ||| to: {}", u.getScreenName(), f.getBio(), u.getDescription());
-            ChangeSet changeSet = ChangeSet.change(f, f.getBio(), u.getDescription(), ChangeType.BIO);
-            f.setBio(u.getDescription());
-            listOfChanges.add(changeSet);
+        for (UpdateChecker updateChecker : updateCheckerSet) {
+            updateChecker.checkUpdate(f, u).ifPresent(listOfChanges::add);
         }
-
-        if (!u.getName().equals(f.getName())) {
-            logger.info("User: {} has changed name from: {} ||| to: {}", u.getScreenName(), f.getName(), u.getName());
-            ChangeSet changeSet = ChangeSet.change(f, f.getName(), u.getName(), ChangeType.NAME);
-            f.setName(u.getName());
-            listOfChanges.add(changeSet);
-        }
-
-        if (!u.getScreenName().equals(f.getUsername())) {
-            logger.info("User has changed screen name from: {} ||| to: {}", f.getUsername(), u.getScreenName());
-            ChangeSet changeSet = ChangeSet.change(f, f.getUsername(), u.getScreenName(), ChangeType.USERNAME);
-            f.setUsername(u.getScreenName());
-            listOfChanges.add(changeSet);
-        }
-
-        if (!u.get400x400ProfileImageURLHttps().equals(f.getProfilePicUrl())) {
-            logger.info("User: {} has changed profile pic from: {} ||| to: {}", u.getScreenName(), f.getProfilePicUrl(), u.get400x400ProfileImageURLHttps());
-            ChangeSet changeSet = ChangeSet.change(f, f.getProfilePicUrl(), u.get400x400ProfileImageURLHttps(), ChangeType.PP);
-            f.setProfilePicUrl(u.get400x400ProfileImageURLHttps());
-            listOfChanges.add(changeSet);
-        }
-
 
         return listOfChanges;
     }

@@ -1,6 +1,7 @@
 package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
+import io.github.akadir.muninn.checker.UpdateChecker;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author akadir
@@ -30,14 +32,16 @@ public class TaskScheduler {
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
     private final TelegramBot telegramBot;
+    private final Set<UpdateChecker> updateCheckers;
 
     @Autowired
     public TaskScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
-                         ChangeSetService changeSetService, TelegramBot telegramBot) {
+                         ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers) {
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
         this.telegramBot = telegramBot;
+        this.updateCheckers = updateCheckers;
     }
 
     @Transactional
@@ -48,7 +52,7 @@ public class TaskScheduler {
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
-                Muninn muninn = new Muninn(user, friendService, changeSetService);
+                Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers);
                 muninn.start();
                 threads.add(muninn);
             }
