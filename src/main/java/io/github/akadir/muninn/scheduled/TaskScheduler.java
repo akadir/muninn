@@ -61,8 +61,9 @@ public class TaskScheduler {
 
             for (Muninn m : threads) {
                 m.join();
-                authenticatedUserService.updateLastCheckedTime(m.getUser());
-                Huginn huginn = new Huginn(m.getUser(), authenticatedUserService, friendService, telegramBot);
+                AuthenticatedUser user = m.getUser();
+                user = authenticatedUserService.updateLastCheckedTime(user);
+                Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
                 huginn.start();
             }
         } else {

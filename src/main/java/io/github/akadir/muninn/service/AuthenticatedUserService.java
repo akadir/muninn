@@ -57,13 +57,13 @@ public class AuthenticatedUserService {
         return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), oneHourBefore);
     }
 
-    public void updateUserNotifiedTime(AuthenticatedUser user) {
+    public AuthenticatedUser updateUserNotifiedTime(AuthenticatedUser user) {
         user.setLastNotifiedTime(new Date());
-        authenticatedUserRepository.save(user);
+        return authenticatedUserRepository.save(user);
     }
 
-    public void updateLastCheckedTime(AuthenticatedUser user) {
+    public AuthenticatedUser updateLastCheckedTime(AuthenticatedUser user) {
         user.setLastCheckedTime(new Date());
-        authenticatedUserRepository.save(user);
+        return authenticatedUserRepository.save(user);
     }
 }

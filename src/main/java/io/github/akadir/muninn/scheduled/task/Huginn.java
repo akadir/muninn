@@ -26,7 +26,7 @@ import static io.github.akadir.muninn.helper.Constants.TELEGRAM_MESSAGE_CHARACTE
 public class Huginn extends Thread {
     private final Logger logger = LoggerFactory.getLogger(Huginn.class);
 
-    private final AuthenticatedUser user;
+    private AuthenticatedUser user;
     private final AuthenticatedUserService authenticatedUserService;
     private final FriendService friendService;
     private final TelegramBot telegramBot;
@@ -113,7 +113,7 @@ public class Huginn extends Thread {
                 logger.info("Message send: {}", message);
             }
 
-            authenticatedUserService.updateUserNotifiedTime(user);
+            user = authenticatedUserService.updateUserNotifiedTime(user);
         }
     }
 
