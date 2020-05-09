@@ -64,9 +64,15 @@
         </dependency>
 
         <dependency>
-            <groupId>postgresql</groupId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>5.4.1.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.1-901-1.jdbc4</version>
+            <version>42.2.12</version>
         </dependency>
 
         <dependency>
