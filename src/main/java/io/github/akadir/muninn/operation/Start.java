@@ -85,7 +85,7 @@ public class Start implements Operation {
 
         message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
-                .enableMarkdownV2(true)
+                .enableHtml(true)
                 .disableWebPagePreview()
                 .setText(messageContent);
 

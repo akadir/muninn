@@ -69,7 +69,7 @@ public class Stop implements Operation {
         return new SendMessage()
                 .setChatId(update.getMessage().getChatId())
                 .disableWebPagePreview()
-                .enableMarkdownV2(true)
+                .enableHtml(true)
                 .setText(messageContent);
     }
 }
