@@ -1,5 +1,8 @@
 package io.github.akadir.muninn.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -10,8 +13,10 @@ import javax.persistence.Table;
  * Date: 4.05.2020
  * Time: 21:58
  */
+@Data
 @Entity
 @Table(name = "user_friend")
+@EqualsAndHashCode(callSuper = true)
 public class UserFriend extends BaseModel {
     @ManyToOne
     @JoinColumn(name = "follower_id")
@@ -27,22 +32,6 @@ public class UserFriend extends BaseModel {
         userFriend.setFriend(friend);
 
         return userFriend;
-    }
-
-    public AuthenticatedUser getFollower() {
-        return follower;
-    }
-
-    public void setFollower(AuthenticatedUser follower) {
-        this.follower = follower;
-    }
-
-    public Friend getFriend() {
-        return friend;
-    }
-
-    public void setFriend(Friend friend) {
-        this.friend = friend;
     }
 
 }

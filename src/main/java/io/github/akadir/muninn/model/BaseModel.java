@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.model;
 
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -11,6 +12,7 @@ import java.util.Date;
  * Date: 3.05.2020
  * Time: 17:18
  */
+@Data
 @MappedSuperclass
 public abstract class BaseModel {
     @Id
@@ -24,38 +26,6 @@ public abstract class BaseModel {
     @Version
     @Column(name = "version")
     private int version;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
 
     @PrePersist
     public void prePersist() {

@@ -1,5 +1,8 @@
 package io.github.akadir.muninn.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -10,8 +13,10 @@ import java.util.Date;
  * Date: 3.05.2020
  * Time: 17:17
  */
+@Data
 @Entity
 @Table(name = "authenticated_user")
+@EqualsAndHashCode(callSuper = true)
 public class AuthenticatedUser extends BaseModel {
     @Column(name = "twitter_user_id")
     private Long twitterUserId;
@@ -34,83 +39,4 @@ public class AuthenticatedUser extends BaseModel {
     @Column(name = "bot_status")
     private int botStatus;
 
-    public Long getTwitterUserId() {
-        return twitterUserId;
-    }
-
-    public void setTwitterUserId(Long twitterUserId) {
-        this.twitterUserId = twitterUserId;
-    }
-
-    public String getTwitterToken() {
-        return twitterToken;
-    }
-
-    public void setTwitterToken(String twitterToken) {
-        this.twitterToken = twitterToken;
-    }
-
-    public String getTwitterTokenSecret() {
-        return twitterTokenSecret;
-    }
-
-    public void setTwitterTokenSecret(String twitterTokenSecret) {
-        this.twitterTokenSecret = twitterTokenSecret;
-    }
-
-    public String getTwitterRequestToken() {
-        return twitterRequestToken;
-    }
-
-    public void setTwitterRequestToken(String twitterRequestToken) {
-        this.twitterRequestToken = twitterRequestToken;
-    }
-
-    public String getTwitterRequestTokenSecret() {
-        return twitterRequestTokenSecret;
-    }
-
-    public void setTwitterRequestTokenSecret(String twitterRequestTokenSecret) {
-        this.twitterRequestTokenSecret = twitterRequestTokenSecret;
-    }
-
-    public Integer getTelegramUserId() {
-        return telegramUserId;
-    }
-
-    public void setTelegramUserId(Integer telegramUserId) {
-        this.telegramUserId = telegramUserId;
-    }
-
-    public Long getTelegramChatId() {
-        return telegramChatId;
-    }
-
-    public void setTelegramChatId(Long telegramChatId) {
-        this.telegramChatId = telegramChatId;
-    }
-
-    public Date getLastNotifiedTime() {
-        return lastNotifiedTime;
-    }
-
-    public void setLastNotifiedTime(Date lastNotifiedTime) {
-        this.lastNotifiedTime = lastNotifiedTime;
-    }
-
-    public Date getLastCheckedTime() {
-        return lastCheckedTime;
-    }
-
-    public void setLastCheckedTime(Date lastCheckedTime) {
-        this.lastCheckedTime = lastCheckedTime;
-    }
-
-    public int getBotStatus() {
-        return botStatus;
-    }
-
-    public void setBotStatus(int isBotActive) {
-        this.botStatus = isBotActive;
-    }
 }

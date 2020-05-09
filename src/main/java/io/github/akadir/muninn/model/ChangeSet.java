@@ -2,6 +2,8 @@ package io.github.akadir.muninn.model;
 
 import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,8 +14,10 @@ import javax.persistence.Table;
  * Date: 4.05.2020
  * Time: 22:07
  */
+@Data
 @Entity
 @Table(name = "change_set")
+@EqualsAndHashCode(callSuper = true)
 public class ChangeSet extends BaseModel {
     @Column(name = "friend_id")
     private Long friendId;
@@ -50,35 +54,4 @@ public class ChangeSet extends BaseModel {
         return changeSet;
     }
 
-    public Long getFriendId() {
-        return friendId;
-    }
-
-    public void setFriendId(Long friendDataId) {
-        this.friendId = friendDataId;
-    }
-
-    public int getChangeType() {
-        return changeType;
-    }
-
-    public void setChangeType(int changeType) {
-        this.changeType = changeType;
-    }
-
-    public String getOldData() {
-        return oldData;
-    }
-
-    public void setOldData(String oldData) {
-        this.oldData = oldData;
-    }
-
-    public String getNewData() {
-        return newData;
-    }
-
-    public void setNewData(String newData) {
-        this.newData = newData;
-    }
 }

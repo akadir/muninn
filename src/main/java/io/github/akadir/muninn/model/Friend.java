@@ -1,6 +1,8 @@
 package io.github.akadir.muninn.model;
 
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import twitter4j.User;
 
 import javax.persistence.Column;
@@ -13,8 +15,10 @@ import java.util.Date;
  * Date: 4.05.2020
  * Time: 22:04
  */
+@Data
 @Entity
 @Table(name = "friend")
+@EqualsAndHashCode(callSuper = true)
 public class Friend extends BaseModel {
     @Column(name = "twitter_user_id")
     private Long twitterUserId;
@@ -43,62 +47,6 @@ public class Friend extends BaseModel {
         friend.lastChecked = new Date();
 
         return friend;
-    }
-
-    public Long getTwitterUserId() {
-        return twitterUserId;
-    }
-
-    public void setTwitterUserId(Long twitterUserId) {
-        this.twitterUserId = twitterUserId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getProfilePicUrl() {
-        return profilePicUrl;
-    }
-
-    public void setProfilePicUrl(String profilePicUrl) {
-        this.profilePicUrl = profilePicUrl;
-    }
-
-    public int getIsAccountActive() {
-        return isAccountActive;
-    }
-
-    public void setIsAccountActive(int isAccountActive) {
-        this.isAccountActive = isAccountActive;
-    }
-
-    public Date getLastChecked() {
-        return lastChecked;
-    }
-
-    public void setLastChecked(Date lastChecked) {
-        this.lastChecked = lastChecked;
     }
 
 }
