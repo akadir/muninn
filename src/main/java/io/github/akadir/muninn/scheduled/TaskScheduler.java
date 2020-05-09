@@ -1,7 +1,6 @@
 package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
-import io.github.akadir.muninn.helper.DateTimeHelper;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -49,14 +48,9 @@ public class TaskScheduler {
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
-                long sinceLastChecked = DateTimeHelper.getTimeDifferenceInHoursSince(user.getLastCheckedTime());
-                if (sinceLastChecked > 6) {
-                    Muninn muninn = new Muninn(user, friendService, changeSetService);
-                    muninn.start();
-                    threads.add(muninn);
-                } else {
-                    logger.info("User already checked in {} hours, will not be checked again.", 6);
-                }
+                Muninn muninn = new Muninn(user, friendService, changeSetService);
+                muninn.start();
+                threads.add(muninn);
             }
 
             for (Muninn m : threads) {

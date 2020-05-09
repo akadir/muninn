@@ -39,7 +39,7 @@ public class Muninn extends Thread {
         this.friendService = friendService;
         this.changeSetService = changeSetService;
     }
-    
+
     @Override
     public void run() {
         Twitter twitter = getTwitter();
@@ -94,10 +94,29 @@ public class Muninn extends Thread {
                 logger.info("Check friend: {}", twitterFriend.getScreenName());
                 if (userFriendsIDs.containsKey(friendId)) {
                     f = userFriendsIDs.get(friendId);
+                    long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
+
+                    if (hoursSinceLastCheck < 6) {
+                        logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
+                        currentFriendIdSet.add(friendId);
+                        RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
+                        continue;
+                    }
+
                     changeSets.addAll(checkUpdates(f, twitterFriend));
                     f.setLastChecked(new Date());
                 } else {
-                    f = Friend.from(twitterFriend);
+                    Optional<Friend> optionalFriend = friendService.findByTwitterUserId(friendId);
+                    if (optionalFriend.isPresent()) {
+                        f = optionalFriend.get();
+                        changeSets.addAll(checkUpdates(f, twitterFriend));
+                        f.setLastChecked(new Date());
+                        logger.info("new followed friend already exist in database.");
+                    } else {
+                        f = Friend.from(twitterFriend);
+                        logger.info("new followed friend not exist in database.");
+                    }
+
                     userFriendsIDs.put(friendId, f);
                     logger.info("Found new following. User: {} followed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
                     UserFriend userFriend = UserFriend.from(user, f);
@@ -152,13 +171,6 @@ public class Muninn extends Thread {
 
     private List<ChangeSet> checkUpdates(Friend f, User u) {
         List<ChangeSet> listOfChanges = new ArrayList<>();
-
-        long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
-
-        if (hoursSinceLastCheck < 20) {
-            logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
-            return listOfChanges;
-        }
 
         if (!u.getDescription().equals(f.getBio())) {
             logger.info("User: {} has changed bio from: {} ||| to: {}", u.getScreenName(), f.getBio(), u.getDescription());

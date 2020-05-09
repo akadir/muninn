@@ -52,7 +52,7 @@ public class AuthenticatedUserService {
 
     public List<AuthenticatedUser> getUsersToCheck() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -1);
+        calendar.add(Calendar.HOUR_OF_DAY, -6);
         Date oneHourBefore = calendar.getTime();
         return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), oneHourBefore);
     }

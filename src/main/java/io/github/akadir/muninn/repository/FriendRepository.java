@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author akadir
@@ -25,6 +26,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             " c.change_type as changeType, c.old_data as oldData, c.new_data as newData from change_set c " +
             "join friend f on f.id = c.friend_id " +
             "join user_friend uf on uf.friend_id = f.id " +
-            "where uf.follower_id = ?1 order by f.id, c.change_type, c.created_at", nativeQuery = true)
+            "where uf.follower_id = ?1 and c.created_at > ?2 order by f.id, c.change_type, c.created_at", nativeQuery = true)
     List<FriendChangeSet> findAllChangeSetForUserSinceLastNotifiedTime(long authenticatedUserId, Date lastNotifiedTime);
+
+    Optional<Friend> findByTwitterUserId(Long twitterUserId);
 }
