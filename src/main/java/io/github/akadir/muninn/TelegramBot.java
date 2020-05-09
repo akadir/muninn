@@ -1,6 +1,6 @@
 package io.github.akadir.muninn;
 
-import io.github.akadir.muninn.enumeration.VmOption;
+import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.exception.InvalidCommandException;
 import io.github.akadir.muninn.operation.Operation;
 import io.github.akadir.muninn.operation.OperationFactory;
@@ -89,11 +89,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return System.getProperty(VmOption.TELEGRAM_BOT_NAME.getKey());
+        return ConfigParams.TELEGRAM_BOT_NAME;
     }
 
     @Override
     public String getBotToken() {
-        return System.getProperty(VmOption.TELEGRAM_TOKEN.getKey());
+        return ConfigParams.TELEGRAM_TOKEN;
     }
 }

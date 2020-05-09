@@ -3,6 +3,7 @@ package io.github.akadir.muninn.scheduled.task;
 import com.kadir.twitterbots.ratelimithandler.handler.RateLimitHandler;
 import com.kadir.twitterbots.ratelimithandler.process.ApiProcessType;
 import io.github.akadir.muninn.bot.TwitterBot;
+import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
@@ -96,7 +97,7 @@ public class Muninn extends Thread {
                     f = userFriendsIDs.get(friendId);
                     long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
 
-                    if (hoursSinceLastCheck < 6) {
+                    if (hoursSinceLastCheck < ConfigParams.RECHECK_PERIOD) {
                         logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
                         currentFriendIdSet.add(friendId);
                         RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);

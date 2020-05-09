@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.service;
 
+import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.repository.AuthenticatedUserRepository;
@@ -52,9 +53,9 @@ public class AuthenticatedUserService {
 
     public List<AuthenticatedUser> getUsersToCheck() {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, -6);
-        Date oneHourBefore = calendar.getTime();
-        return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), oneHourBefore);
+        calendar.add(Calendar.HOUR_OF_DAY, -ConfigParams.RECHECK_PERIOD);
+        Date recheckedPeriodHoursBefore = calendar.getTime();
+        return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), recheckedPeriodHoursBefore);
     }
 
     public AuthenticatedUser updateUserNotifiedTime(AuthenticatedUser user) {

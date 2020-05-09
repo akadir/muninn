@@ -1,6 +1,6 @@
 package io.github.akadir.muninn.bot;
 
-import io.github.akadir.muninn.enumeration.VmOption;
+import io.github.akadir.muninn.config.ConfigParams;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 
@@ -22,10 +22,10 @@ public class TwitterBot {
     }
 
     private static String getConsumerKey() {
-        return System.getProperty(VmOption.TWITTER_CONSUMER_KEY.getKey());
+        return ConfigParams.TWITTER_CONSUMER_KEY;
     }
 
     private static String getConsumerSecret() {
-        return System.getProperty(VmOption.TWITTER_CONSUMER_SECRET.getKey());
+        return ConfigParams.TWITTER_CONSUMER_SECRET;
     }
 }
