@@ -102,7 +102,7 @@ public class Muninn extends Thread {
             try {
                 User twitterFriend = twitter.showUser(friendId);
                 Friend f;
-
+                logger.info("Check friend: {}", twitterFriend.getScreenName());
                 if (userFriendsIDs.containsKey(friendId)) {
                     f = userFriendsIDs.get(friendId);
                     changeSets.addAll(checkUpdates(f, twitterFriend));

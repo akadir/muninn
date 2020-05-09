@@ -54,6 +54,8 @@ public class TaskScheduler {
                     Muninn muninn = new Muninn(user, friendService, changeSetService);
                     muninn.start();
                     threads.add(muninn);
+                } else {
+                    logger.info("User already checked in {} hours, will not be checked again.", 6);
                 }
             }
 
