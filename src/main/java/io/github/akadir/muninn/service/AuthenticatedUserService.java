@@ -26,10 +26,6 @@ public class AuthenticatedUserService {
         this.authenticatedUserRepository = authenticatedUserRepository;
     }
 
-    public List<AuthenticatedUser> findAll() {
-        return authenticatedUserRepository.findAll();
-    }
-
     public AuthenticatedUser saveAuthenticatedUser(AuthenticatedUser authenticatedUser) {
         return authenticatedUserRepository.save(authenticatedUser);
     }

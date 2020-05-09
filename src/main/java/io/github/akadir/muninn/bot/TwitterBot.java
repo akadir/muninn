@@ -16,16 +16,8 @@ public class TwitterBot {
     public static Twitter getTwitter() {
         TwitterFactory twitterFactory = new TwitterFactory();
         Twitter twitter = twitterFactory.getInstance();
-        twitter.setOAuthConsumer(getConsumerKey(), getConsumerSecret());
+        twitter.setOAuthConsumer(ConfigParams.TWITTER_CONSUMER_KEY, ConfigParams.TWITTER_CONSUMER_SECRET);
 
         return twitter;
-    }
-
-    private static String getConsumerKey() {
-        return ConfigParams.TWITTER_CONSUMER_KEY;
-    }
-
-    private static String getConsumerSecret() {
-        return ConfigParams.TWITTER_CONSUMER_SECRET;
     }
 }
