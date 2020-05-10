@@ -6,15 +6,25 @@ package io.github.akadir.muninn.enumeration;
  * Time: 23:37
  */
 public enum TwitterAccountStatus {
-    ACTIVE("1"), DEACTIVATED("50"), SUSPENDED("63");
+    ACTIVE(1), DEACTIVATED(50), SUSPENDED(63), UNKNOWN(-1);
 
-    private final String code;
+    private final int code;
 
-    TwitterAccountStatus(String code) {
+    TwitterAccountStatus(int code) {
         this.code = code;
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
+    }
+
+    public static TwitterAccountStatus of(int code) {
+        for (TwitterAccountStatus status : TwitterAccountStatus.values()) {
+            if (status.getCode() == code) {
+                return status;
+            }
+        }
+
+        return UNKNOWN;
     }
 }

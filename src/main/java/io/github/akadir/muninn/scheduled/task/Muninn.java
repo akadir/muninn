@@ -1,23 +1,27 @@
 package io.github.akadir.muninn.scheduled.task;
 
-import com.kadir.twitterbots.ratelimithandler.handler.RateLimitHandler;
-import com.kadir.twitterbots.ratelimithandler.process.ApiProcessType;
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.bot.TwitterBot;
 import io.github.akadir.muninn.checker.UpdateChecker;
 import io.github.akadir.muninn.config.ConfigParams;
+import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
+import io.github.akadir.muninn.exception.TokenExpiredException;
+import io.github.akadir.muninn.exception.base.AccountStatusException;
 import io.github.akadir.muninn.helper.DateTimeHelper;
-import io.github.akadir.muninn.model.*;
+import io.github.akadir.muninn.model.AuthenticatedUser;
+import io.github.akadir.muninn.model.ChangeSet;
+import io.github.akadir.muninn.model.Friend;
+import io.github.akadir.muninn.model.UserFriend;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import twitter4j.IDs;
 import twitter4j.Twitter;
-import twitter4j.TwitterException;
 import twitter4j.User;
-import twitter4j.auth.AccessToken;
 
 import java.util.*;
 import java.util.function.Function;
@@ -35,24 +39,44 @@ public class Muninn extends Thread {
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckerSet;
+    private final TelegramBot telegramBot;
+
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
-                  Set<UpdateChecker> updateCheckerSet) {
+                  Set<UpdateChecker> updateCheckerSet, TelegramBot telegramBot) {
         this.user = user;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
         this.updateCheckerSet = updateCheckerSet;
+        this.telegramBot = telegramBot;
     }
 
     @Override
     public void run() {
-        Twitter twitter = getTwitter();
-        logger.info("Start to checking friend updates for user: {}", user.getTwitterUserId());
-        List<Friend> friends = friendService.findUserFriends(user.getId());
-        super.setName("muninn for: " + user.getTwitterUserId());
+        try {
+            Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
+            logger.info("Start to checking friend updates for user: {}", user.getTwitterUserId());
+            List<Friend> friends = friendService.findUserFriends(user.getId());
+            super.setName("muninn for: " + user.getTwitterUserId());
 
-        checkUserFriends(twitter, friends);
-        logger.info("Finish to checking friend updates for user: {}", user.getTwitterUserId());
+            checkUserFriends(twitter, friends);
+            logger.info("Finish to checking friend updates for user: {}", user.getTwitterUserId());
+        } catch (AccountSuspendedException | TokenExpiredException e) {
+            logger.error("User token expired: {}", user.getId());
+
+            user.setBotStatus(TelegramBotStatus.NOT_ACTIVE.getCode());
+
+            String message = "Your twitter account logged out from <b>Muninn</b> bot.\n\n You should to login again to use <b>Muninn</b>.";
+
+            SendMessage telegramMessage = new SendMessage()
+                    .setChatId(user.getTelegramChatId())
+                    .enableHtml(true)
+                    .disableWebPagePreview()
+                    .setText(message);
+
+            telegramBot.notify(telegramMessage);
+            logger.info("Message send: {}", message);
+        }
     }
 
     private void checkUserFriends(Twitter twitter, List<Friend> friends) {
@@ -60,13 +84,13 @@ public class Muninn extends Thread {
         Map<Long, Friend> friendIdFriendMap = friends.stream()
                 .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
 
-        Optional<IDs> friendIds;
         long cursor = -1;
+        IDs friendIds;
 
         do {
-            friendIds = getFriendIDs(twitter, cursor);
-            checkForFriendUpdates(twitter, friendIds.orElse(new EmptyIDs()).getIDs(), friendIdFriendMap, currentFollowingSet);
-        } while ((cursor = friendIds.orElse(new EmptyIDs()).getNextCursor()) != 0);
+            friendIds = TwitterBot.getFriendIDs(twitter, user, cursor);
+            checkForFriendUpdates(twitter, friendIds.getIDs(), friendIdFriendMap, currentFollowingSet);
+        } while ((cursor = friendIds.getNextCursor()) != 0);
 
         checkUnfollows(currentFollowingSet, friendIdFriendMap);
     }
@@ -93,58 +117,52 @@ public class Muninn extends Thread {
 
         for (long friendId : friendIds) {
             try {
-                User twitterFriend = twitter.showUser(friendId);
+                User twitterFriend = TwitterBot.showUser(twitter, user, friendId);
                 Friend f;
                 logger.info("Check friend: {}", twitterFriend.getScreenName());
+
                 if (userFriendsIDs.containsKey(friendId)) {
                     f = userFriendsIDs.get(friendId);
                     long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
 
                     if (hoursSinceLastCheck < ConfigParams.RECHECK_PERIOD) {
-                        logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.", f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
+                        logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.",
+                                f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
                         currentFriendIdSet.add(friendId);
-                        RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
                         continue;
                     }
 
                     changeSets.addAll(checkUpdates(f, twitterFriend));
-                    f.setLastChecked(new Date());
                 } else {
+                    logger.info("Found new following. User: {} followed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
                     Optional<Friend> optionalFriend = friendService.findByTwitterUserId(friendId);
+
                     if (optionalFriend.isPresent()) {
                         f = optionalFriend.get();
                         changeSets.addAll(checkUpdates(f, twitterFriend));
-                        f.setLastChecked(new Date());
                         logger.info("new followed friend already exist in database.");
                     } else {
                         f = Friend.from(twitterFriend);
                         logger.info("new followed friend not exist in database.");
                     }
 
-                    userFriendsIDs.put(friendId, f);
-                    logger.info("Found new following. User: {} followed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
                     UserFriend userFriend = UserFriend.from(user, f);
                     newFollowings.add(userFriend);
+                    userFriendsIDs.put(friendId, f);
                 }
 
                 friendList.add(f);
                 currentFriendIdSet.add(friendId);
                 userFriendsIDs.put(friendId, f);
-                RateLimitHandler.handle(twitter.getId(), twitterFriend.getRateLimitStatus(), ApiProcessType.SHOW_USER);
-            } catch (TwitterException e) {
-                logger.error("Error while getting user information: {}", friendId, e);
+            } catch (AccountStatusException e) {
+                logger.error("User with id {} deactivated account or suspended", friendId);
 
-                if (e.getStatusCode() == 64) {
-                    throw new AccountSuspendedException();
-                }
-
-                if (userFriendsIDs.containsKey(friendId) && (e.getStatusCode() == 50 || e.getStatusCode() == 63)) {
+                if (userFriendsIDs.containsKey(friendId)) {
                     Friend f = userFriendsIDs.get(friendId);
-                    ChangeSet deactivateAccount = ChangeSet.changeStatus(f, TwitterAccountStatus.ACTIVE, TwitterAccountStatus.DEACTIVATED);
-                    changeSets.add(deactivateAccount);
+                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountStatus.of(f.getIsAccountActive()), e.getAccountStatus()));
                     f.setLastChecked(new Date());
+                    f.setIsAccountActive(e.getAccountStatus().getCode());
                     friendList.add(f);
-                    userFriendsIDs.put(friendId, f);
                 }
             }
         }
@@ -154,25 +172,6 @@ public class Muninn extends Thread {
         changeSetService.saveAll(user, changeSets);
     }
 
-    private Twitter getTwitter() {
-        Twitter twitter = TwitterBot.getTwitter();
-        twitter.setOAuthAccessToken(new AccessToken(user.getTwitterToken(), user.getTwitterTokenSecret()));
-        return twitter;
-    }
-
-    private Optional<IDs> getFriendIDs(Twitter twitter, long cursor) {
-        IDs iDs = null;
-        try {
-            iDs = twitter.getFriendsIDs(user.getTwitterUserId(), cursor);
-        } catch (TwitterException e) {
-            logger.error("Error while fetching user friends: ", e);
-            if (e.getStatusCode() == 64) {
-                throw new AccountSuspendedException();
-            }
-        }
-        return Optional.ofNullable(iDs);
-    }
-
     private List<ChangeSet> checkUpdates(Friend f, User u) {
         List<ChangeSet> listOfChanges = new ArrayList<>();
 
@@ -180,6 +179,7 @@ public class Muninn extends Thread {
             updateChecker.checkUpdate(f, u).ifPresent(listOfChanges::add);
         }
 
+        f.setLastChecked(new Date());
         return listOfChanges;
     }
 

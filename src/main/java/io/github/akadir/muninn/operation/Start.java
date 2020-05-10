@@ -62,7 +62,8 @@ public class Start implements Operation {
                 messageContent = messageSource.getMessage(MuninnMessage.BOT_ALREADY_ACTIVATED.name(),
                         new Object[0], Locale.getDefault());
             } else {
-                messageContent = authenticate(twitter, update);
+                Optional<AuthenticatedUser> optionalAuthenticatingUser = authenticatedUserService.findUserBeingAuthenticated(userId);
+                messageContent = authenticate(twitter, update, optionalAuthenticatingUser.orElse(new AuthenticatedUser()));
             }
         } else {
             Optional<AuthenticatedUser> optionalAuthenticatingUser = authenticatedUserService.findUserBeingAuthenticated(userId);
@@ -94,14 +95,12 @@ public class Start implements Operation {
         return message;
     }
 
-    private String authenticate(Twitter twitter, Update update) {
+    private String authenticate(Twitter twitter, Update update, AuthenticatedUser authenticatedUser) {
         String message;
         try {
             int userId = update.getMessage().getFrom().getId();
 
             RequestToken requestToken = twitter.getOAuthRequestToken();
-
-            AuthenticatedUser authenticatedUser = new AuthenticatedUser();
 
             authenticatedUser.setBotStatus(TelegramBotStatus.AUTHENTICATING.getCode());
             authenticatedUser.setTelegramChatId(update.getMessage().getChatId());

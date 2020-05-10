@@ -2,6 +2,7 @@ package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.checker.UpdateChecker;
+import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -52,7 +53,7 @@ public class TaskScheduler {
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
-                Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers);
+                Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers, telegramBot);
                 muninn.start();
                 threads.add(muninn);
             }
@@ -61,8 +62,10 @@ public class TaskScheduler {
                 m.join();
                 AuthenticatedUser user = m.getUser();
                 user = authenticatedUserService.updateLastCheckedTime(user);
-                Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
-                huginn.start();
+                if (user.getBotStatus() == TelegramBotStatus.ACTIVE.getCode()) {
+                    Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
+                    huginn.start();
+                }
             }
         } else {
             logger.info("No user found.");

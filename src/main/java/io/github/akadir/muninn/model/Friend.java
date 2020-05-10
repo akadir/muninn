@@ -43,7 +43,7 @@ public class Friend extends BaseModel {
         friend.name = user.getName();
         friend.bio = user.getDescription();
         friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
-        friend.isAccountActive = Integer.parseInt(TwitterAccountStatus.ACTIVE.getCode());
+        friend.isAccountActive = TwitterAccountStatus.ACTIVE.getCode();
         friend.lastChecked = new Date();
 
         return friend;
