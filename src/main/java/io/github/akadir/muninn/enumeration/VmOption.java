@@ -10,7 +10,10 @@ public enum VmOption {
     TELEGRAM_TOKEN("telegramToken"),
     TWITTER_CONSUMER_KEY("twitterConsumerKey"),
     TWITTER_CONSUMER_SECRET("twitterConsumerSecret"),
-    RECHECK_PERIOD("reCheckPeriod");
+    RECHECK_PERIOD("reCheckPeriod"),
+    DATA_SOURCE_URL("DATA_SOURCE_URL"),
+    DATA_SOURCE_USERNAME("DATA_SOURCE_USERNAME"),
+    DATA_SOURCE_PASSWORD("DATA_SOURCE_PASSWORD");
 
     VmOption(String key) {
         this.key = key;
