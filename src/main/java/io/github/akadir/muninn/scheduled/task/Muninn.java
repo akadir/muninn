@@ -40,6 +40,7 @@ public class Muninn extends Thread {
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckerSet;
     private final TelegramBot telegramBot;
+    private List<Friend> unfollowedFriendList;
 
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
@@ -80,6 +81,7 @@ public class Muninn extends Thread {
     }
 
     private void checkUserFriends(Twitter twitter, List<Friend> friends) {
+        List<ChangeSet> changeSets = new ArrayList<>();
         Set<Long> currentFollowingSet = new HashSet<>();
         Map<Long, Friend> friendIdFriendMap = friends.stream()
                 .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
@@ -89,28 +91,33 @@ public class Muninn extends Thread {
 
         do {
             friendIds = TwitterBot.getFriendIDs(twitter, user, cursor);
-            checkForFriendUpdates(twitter, friendIds.getIDs(), friendIdFriendMap, currentFollowingSet);
+            changeSets.addAll(checkForFriendUpdates(twitter, friendIds.getIDs(), friendIdFriendMap, currentFollowingSet));
         } while ((cursor = friendIds.getNextCursor()) != 0);
 
-        checkUnfollows(currentFollowingSet, friendIdFriendMap);
+        changeSets.addAll(checkUnfollows(twitter, currentFollowingSet, friendIdFriendMap));
+
+        changeSetService.saveAll(user, changeSets);
     }
 
-    private void checkUnfollows(Set<Long> currentFollowingSet, Map<Long, Friend> oldFollowingMap) {
-        List<Long> unfollowedIdList = new ArrayList<>();
+    private List<ChangeSet> checkUnfollows(Twitter twitter, Set<Long> currentFollowingSet, Map<Long, Friend> oldFollowingMap) {
+        List<ChangeSet> changeSets = new ArrayList<>();
+        unfollowedFriendList = new ArrayList<>();
 
         for (Map.Entry<Long, Friend> entry : oldFollowingMap.entrySet()) {
             if (!currentFollowingSet.contains(entry.getKey())) {
-                unfollowedIdList.add(entry.getValue().getId());
+                unfollowedFriendList.add(entry.getValue());
             }
         }
 
-        if (!unfollowedIdList.isEmpty()) {
-            friendService.unfollowFriends(user, unfollowedIdList);
+        if (!unfollowedFriendList.isEmpty()) {
+            changeSets = checkUnfollowedUsersStatuses(twitter, unfollowedFriendList);
         }
+
+        return changeSets;
     }
 
-    private void checkForFriendUpdates(Twitter twitter, long[] friendIds, Map<Long, Friend> userFriendsIDs,
-                                       Set<Long> currentFriendIdSet) {
+    private List<ChangeSet> checkForFriendUpdates(Twitter twitter, long[] friendIds, Map<Long, Friend> userFriendsIDs,
+                                                  Set<Long> currentFriendIdSet) {
         List<ChangeSet> changeSets = new ArrayList<>();
         List<Friend> friendList = new ArrayList<>();
         List<UserFriend> newFollowings = new ArrayList<>();
@@ -169,7 +176,8 @@ public class Muninn extends Thread {
 
         friendService.saveAllFriends(user, friendList);
         friendService.saveNewFollowings(user, newFollowings);
-        changeSetService.saveAll(user, changeSets);
+
+        return changeSets;
     }
 
     private List<ChangeSet> checkUpdates(Friend f, User u) {
@@ -183,7 +191,27 @@ public class Muninn extends Thread {
         return listOfChanges;
     }
 
+    public List<ChangeSet> checkUnfollowedUsersStatuses(Twitter twitter, List<Friend> unfollowedFriendList) {
+        List<ChangeSet> changeSets = new ArrayList<>();
+
+        for (Friend f : unfollowedFriendList) {
+            try {
+                TwitterBot.showUser(twitter, user, f.getTwitterUserId());
+            } catch (AccountStatusException e) {
+                changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
+                f.setLastChecked(new Date());
+                f.setAccountState(e.getAccountStatus().getCode());
+            }
+        }
+
+        return changeSets;
+    }
+
     public AuthenticatedUser getUser() {
         return user;
+    }
+
+    public List<Friend> getUnfollowedFriendList() {
+        return unfollowedFriendList;
     }
 }

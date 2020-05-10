@@ -6,7 +6,7 @@ package io.github.akadir.muninn.enumeration;
  * Time: 23:27
  */
 public enum ChangeType {
-    BIO(1), ACCOUNT_STATUS(2), PP(3), NAME(4), USERNAME(5);
+    BIO(1), ACCOUNT_STATUS(2), PROFILE_PIC(3), NAME(4), USERNAME(5), UNKNOWN(-1);
 
     private final int code;
 
@@ -25,6 +25,6 @@ public enum ChangeType {
             }
         }
 
-        return null;
+        return UNKNOWN;
     }
 }

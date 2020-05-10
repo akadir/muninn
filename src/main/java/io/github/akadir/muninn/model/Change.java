@@ -1,12 +1,10 @@
 package io.github.akadir.muninn.model;
 
 import io.github.akadir.muninn.enumeration.ChangeType;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import io.github.akadir.muninn.helper.DiffHelper;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
 import lombok.Data;
-
-import static io.github.akadir.muninn.helper.Constants.NEW_TAG;
-import static io.github.akadir.muninn.helper.Constants.OLD_TAG;
 
 /**
  * @author akadir
@@ -29,24 +27,29 @@ public class Change {
         return change;
     }
 
+    public static Change from(Change oldest, Change newer) {
+        Change change = new Change();
+
+        change.type = oldest.getType();
+        change.oldData = oldest.getOldData();
+        change.newData = newer.getNewData();
+
+        return change;
+    }
+
     @Override
     public String toString() {
         ChangeType changeType = ChangeType.of(type);
 
-        if (ChangeType.BIO == changeType) {
-            String change = DiffHelper.generateDiff(oldData, newData);
-            return "<b>Bio:</b> " + change;
+        if (ChangeType.BIO == changeType || ChangeType.USERNAME == changeType || ChangeType.NAME == changeType) {
+            return DiffHelper.generateDiff(oldData, newData);
         } else if (ChangeType.ACCOUNT_STATUS == changeType) {
-            return "<b>Status:</b>\n" + OLD_TAG + oldData + "\n" + NEW_TAG + newData;
-        } else if (ChangeType.USERNAME == changeType) {
-            String change = DiffHelper.generateDiff(oldData, newData);
-            return "<b>Username:</b>  " + change;
-        } else if (ChangeType.NAME == changeType) {
-            String change = DiffHelper.generateDiff(oldData, newData);
-            return "<b>Name:</b> " + change;
-        } else if (ChangeType.PP == changeType) {
-            return "<b>Profile Pic:</b> from <a href=\"" + oldData +
-                    "\"><i>old</i></a> to <a href=\"" + newData + "\"><i>new</i></a>";
+            TwitterAccountState newState = TwitterAccountState.of(Integer.parseInt(newData));
+            TwitterAccountState oldState = TwitterAccountState.of(Integer.parseInt(oldData));
+            return "<b>" + newState.name() + "</b> --> <b>" + oldState.name() + "</b>";
+        } else if (ChangeType.PROFILE_PIC == changeType) {
+            return "<a href=\"" + oldData +
+                    "\"><i>oldest</i></a> --> <a href=\"" + newData + "\"><i>newest</i></a>";
         }
 
         return "";

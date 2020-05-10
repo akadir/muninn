@@ -46,7 +46,7 @@ public class TaskScheduler {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 10)
+    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 3)
     public void checkFriends() throws InterruptedException {
         List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
         List<Muninn> threads = new ArrayList<>();
@@ -63,7 +63,8 @@ public class TaskScheduler {
                 AuthenticatedUser user = m.getUser();
                 user = authenticatedUserService.updateLastCheckedTime(user);
                 if (user.getBotStatus() == TelegramBotStatus.ACTIVE.getCode()) {
-                    Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
+                    Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot,
+                            m.getUnfollowedFriendList());
                     huginn.start();
                 }
             }

@@ -1,8 +1,10 @@
 package io.github.akadir.muninn.scheduled.task;
 
 import io.github.akadir.muninn.TelegramBot;
+import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.model.Change;
+import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.FriendService;
@@ -30,13 +32,15 @@ public class Huginn extends Thread {
     private final AuthenticatedUserService authenticatedUserService;
     private final FriendService friendService;
     private final TelegramBot telegramBot;
+    private final List<Friend> unfollowedFriendList;
 
     public Huginn(AuthenticatedUser user, AuthenticatedUserService authenticatedUserService,
-                  FriendService friendService, TelegramBot telegramBot) {
+                  FriendService friendService, TelegramBot telegramBot, List<Friend> unfollowedFriendList) {
         this.user = user;
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.telegramBot = telegramBot;
+        this.unfollowedFriendList = unfollowedFriendList;
     }
 
     @Override
@@ -63,16 +67,17 @@ public class Huginn extends Thread {
             List<FriendChangeSet> changes = entry.getValue();
 
 
-            Map<Integer, Change> uniqueChanges = new LinkedHashMap<>();
+            Map<Integer, List<Change>> uniqueChanges = new LinkedHashMap<>();
 
 
             for (FriendChangeSet friendChangeSet : changes) {
+                Change change = Change.from(friendChangeSet);
                 if (uniqueChanges.containsKey(friendChangeSet.getChangeType())) {
-                    Change change = uniqueChanges.get(friendChangeSet.getChangeType());
-                    change.setNewData(friendChangeSet.getNewData());
+                    uniqueChanges.get(friendChangeSet.getChangeType()).add(change);
                 } else {
-                    Change change = Change.from(friendChangeSet);
-                    uniqueChanges.put(friendChangeSet.getChangeType(), change);
+                    List<Change> changeList = new ArrayList<>();
+                    changeList.add(change);
+                    uniqueChanges.put(friendChangeSet.getChangeType(), changeList);
                 }
             }
 
@@ -96,14 +101,25 @@ public class Huginn extends Thread {
 
             user = authenticatedUserService.updateUserNotifiedTime(user);
         }
+
+        if (unfollowedFriendList != null && !unfollowedFriendList.isEmpty()) {
+            friendService.unfollowFriends(user, unfollowedFriendList.stream().map(Friend::getId).collect(Collectors.toList()));
+        }
     }
 
-    private void generateMessage(String username, Map<Integer, Change> uniqueChanges, List<String> messages) {
+    private void generateMessage(String username, Map<Integer, List<Change>> uniqueChanges, List<String> messages) {
         StringBuilder mb = new StringBuilder("\n\n<a href=\"https://twitter.com/")
                 .append(username).append("\"><b>").append(username).append("</b></a> has changed: \n");
 
-        for (Map.Entry<Integer, Change> entry : uniqueChanges.entrySet()) {
-            mb.append("\n\n").append(entry.getValue());
+        for (Map.Entry<Integer, List<Change>> entry : uniqueChanges.entrySet()) {
+            ChangeType changeType = ChangeType.of(entry.getKey());
+
+            List<Change> changes = entry.getValue();
+
+            mb.append("\n\n<b>").append(changeType.name()).append("</b>[<i>").append(changes.size()).append("</i>]:\n");
+
+            Change oldestToNewest = Change.from(changes.get(0), changes.get(changes.size() - 1));
+            mb.append("\n").append(oldestToNewest);
         }
 
         mb.append("\n\n--------");

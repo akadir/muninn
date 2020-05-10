@@ -27,7 +27,7 @@ public class ProfilePicUpdateChecker implements UpdateChecker {
             logger.info("User: {} has changed profile pic from: {} ||| to: {}", user.getScreenName(),
                     friend.getProfilePicUrl(), user.get400x400ProfileImageURLHttps());
             ChangeSet changeSet = ChangeSet.change(friend, friend.getProfilePicUrl(),
-                    user.get400x400ProfileImageURLHttps(), ChangeType.PP);
+                    user.get400x400ProfileImageURLHttps(), ChangeType.PROFILE_PIC);
             friend.setProfilePicUrl(user.get400x400ProfileImageURLHttps());
             optionalChangeSet = Optional.of(changeSet);
         }
