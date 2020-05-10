@@ -1,6 +1,6 @@
 package io.github.akadir.muninn.checker;
 
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import io.github.akadir.muninn.model.ChangeSet;
 import io.github.akadir.muninn.model.Friend;
 import org.slf4j.Logger;
@@ -23,11 +23,11 @@ public class AccountStateChecker implements UpdateChecker {
     public Optional<ChangeSet> checkUpdate(Friend friend, User user) {
         Optional<ChangeSet> optionalChangeSet = Optional.empty();
 
-        if (friend.getIsAccountActive() != TwitterAccountStatus.ACTIVE.getCode()) {
-            logger.info("User: {} activated account. It's state was: {}", user.getScreenName(), friend.getIsAccountActive());
-            ChangeSet changeSet = ChangeSet.changeStatus(friend, TwitterAccountStatus.of(friend.getIsAccountActive()),
-                    TwitterAccountStatus.ACTIVE);
-            friend.setIsAccountActive(TwitterAccountStatus.ACTIVE.getCode());
+        if (friend.getAccountState() != TwitterAccountState.ACTIVE.getCode()) {
+            logger.info("User: {} activated account. It's state was: {}", user.getScreenName(), friend.getAccountState());
+            ChangeSet changeSet = ChangeSet.changeStatus(friend, TwitterAccountState.of(friend.getAccountState()),
+                    TwitterAccountState.ACTIVE);
+            friend.setAccountState(TwitterAccountState.ACTIVE.getCode());
             optionalChangeSet = Optional.of(changeSet);
         }
 

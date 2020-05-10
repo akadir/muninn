@@ -5,12 +5,12 @@ package io.github.akadir.muninn.enumeration;
  * Date: 5.05.2020
  * Time: 23:37
  */
-public enum TwitterAccountStatus {
+public enum TwitterAccountState {
     ACTIVE(1), DEACTIVATED(50), SUSPENDED(63), UNKNOWN(-1);
 
     private final int code;
 
-    TwitterAccountStatus(int code) {
+    TwitterAccountState(int code) {
         this.code = code;
     }
 
@@ -18,8 +18,8 @@ public enum TwitterAccountStatus {
         return code;
     }
 
-    public static TwitterAccountStatus of(int code) {
-        for (TwitterAccountStatus status : TwitterAccountStatus.values()) {
+    public static TwitterAccountState of(int code) {
+        for (TwitterAccountState status : TwitterAccountState.values()) {
             if (status.getCode() == code) {
                 return status;
             }

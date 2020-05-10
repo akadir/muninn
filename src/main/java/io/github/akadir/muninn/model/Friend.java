@@ -1,6 +1,6 @@
 package io.github.akadir.muninn.model;
 
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import twitter4j.User;
@@ -30,8 +30,8 @@ public class Friend extends BaseModel {
     private String bio;
     @Column(name = "profile_pic_url")
     private String profilePicUrl;
-    @Column(name = "is_account_active")
-    private int isAccountActive;
+    @Column(name = "account_state")
+    private int accountState;
     @Column(name = "last_checked")
     private Date lastChecked;
 
@@ -43,7 +43,7 @@ public class Friend extends BaseModel {
         friend.name = user.getName();
         friend.bio = user.getDescription();
         friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
-        friend.isAccountActive = TwitterAccountStatus.ACTIVE.getCode();
+        friend.accountState = TwitterAccountState.ACTIVE.getCode();
         friend.lastChecked = new Date();
 
         return friend;

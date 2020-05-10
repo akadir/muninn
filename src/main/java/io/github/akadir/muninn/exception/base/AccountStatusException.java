@@ -1,6 +1,6 @@
 package io.github.akadir.muninn.exception.base;
 
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 
 /**
  * @author akadir
@@ -8,5 +8,5 @@ import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
  * Time: 16:31
  */
 public abstract class AccountStatusException extends RuntimeException {
-    public abstract TwitterAccountStatus getAccountStatus();
+    public abstract TwitterAccountState getAccountStatus();
 }

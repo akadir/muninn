@@ -1,6 +1,6 @@
 package io.github.akadir.muninn.exception;
 
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import io.github.akadir.muninn.exception.base.AccountStatusException;
 
 /**
@@ -14,7 +14,7 @@ public class UserNotFoundException extends AccountStatusException {
         super();
     }
 
-    public TwitterAccountStatus getAccountStatus() {
-        return TwitterAccountStatus.DEACTIVATED;
+    public TwitterAccountState getAccountStatus() {
+        return TwitterAccountState.DEACTIVATED;
     }
 }

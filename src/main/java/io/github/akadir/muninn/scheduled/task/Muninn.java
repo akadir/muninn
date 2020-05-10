@@ -5,7 +5,7 @@ import io.github.akadir.muninn.bot.TwitterBot;
 import io.github.akadir.muninn.checker.UpdateChecker;
 import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
 import io.github.akadir.muninn.exception.TokenExpiredException;
 import io.github.akadir.muninn.exception.base.AccountStatusException;
@@ -159,9 +159,9 @@ public class Muninn extends Thread {
 
                 if (userFriendsIDs.containsKey(friendId)) {
                     Friend f = userFriendsIDs.get(friendId);
-                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountStatus.of(f.getIsAccountActive()), e.getAccountStatus()));
+                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
                     f.setLastChecked(new Date());
-                    f.setIsAccountActive(e.getAccountStatus().getCode());
+                    f.setAccountState(e.getAccountStatus().getCode());
                     friendList.add(f);
                 }
             }

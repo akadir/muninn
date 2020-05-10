@@ -1,7 +1,7 @@
 package io.github.akadir.muninn.model;
 
 import io.github.akadir.muninn.enumeration.ChangeType;
-import io.github.akadir.muninn.enumeration.TwitterAccountStatus;
+import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -38,7 +38,7 @@ public class ChangeSet extends BaseModel {
         return changeSet;
     }
 
-    public static ChangeSet changeStatus(Friend f, TwitterAccountStatus oldStatus, TwitterAccountStatus newStatus) {
+    public static ChangeSet changeStatus(Friend f, TwitterAccountState oldStatus, TwitterAccountState newStatus) {
         ChangeSet changeSet = from(f.getId(), "" + oldStatus.getCode(), "" + newStatus.getCode());
 
         changeSet.setChangeType(ChangeType.ACCOUNT_STATUS.getCode());
