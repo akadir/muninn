@@ -58,24 +58,16 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        logger.info("Update received from: {}", update);
+        logger.info("Update received: {}", update);
 
         if (update.hasMessage()) {
-            try {
-                Operation operation = operationFactory.getOperation(update.getMessage().getText());
-                SendMessage message = operation.generateMessage(update);
-                execute(message);
-            } catch (TelegramApiRequestException e) {
-                logger.error("TelegramApiRequestException: {}", e.getApiResponse(), e);
-            } catch (TelegramApiException e) {
-                logger.error("Telegram sending message error: ", e);
-            } catch (InvalidCommandException e) {
-                logger.error("Error occurred: ", e);
-            }
+            Operation operation = operationFactory.getOperation(update.getMessage().getText());
+            SendMessage message = operation.generateMessage(update);
+            sendMessage(message);
         }
     }
 
-    public void notify(SendMessage message) {
+    private void sendMessage(SendMessage message) {
         try {
             execute(message);
         } catch (TelegramApiRequestException e) {
@@ -85,6 +77,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         } catch (InvalidCommandException e) {
             logger.error("Error occurred: ", e);
         }
+    }
+
+    public void notify(SendMessage message) {
+        sendMessage(message);
     }
 
     @Override
