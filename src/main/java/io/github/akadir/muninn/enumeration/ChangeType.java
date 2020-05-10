@@ -17,4 +17,14 @@ public enum ChangeType {
     public int getCode() {
         return code;
     }
+
+    public static ChangeType of(int code) {
+        for (ChangeType changeType : ChangeType.values()) {
+            if (changeType.getCode() == code) {
+                return changeType;
+            }
+        }
+
+        return null;
+    }
 }

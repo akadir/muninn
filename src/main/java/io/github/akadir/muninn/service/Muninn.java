@@ -31,14 +31,11 @@ public class Muninn extends Thread {
     private final Logger logger = LoggerFactory.getLogger(Muninn.class);
 
     private final AuthenticatedUser user;
-    private final AuthenticatedUserService authenticatedUserService;
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
 
-    public Muninn(AuthenticatedUser user, AuthenticatedUserService authenticatedUserService,
-                  FriendService friendService, ChangeSetService changeSetService) {
+    public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService) {
         this.user = user;
-        this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
     }
@@ -62,8 +59,6 @@ public class Muninn extends Thread {
         super.setName("muninn for: " + user.getTwitterUserId());
 
         checkUserFriends(twitter, friends);
-        user.setLastNotifiedTime(new Date());
-        authenticatedUserService.saveAuthenticatedUser(user);
         logger.info("Finish to checking friend updates for user: {}", user.getTwitterUserId());
     }
 

@@ -75,6 +75,18 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    public void notify(SendMessage message) {
+        try {
+            execute(message);
+        } catch (TelegramApiRequestException e) {
+            logger.error("TelegramApiRequestException: {}", e.getApiResponse(), e);
+        } catch (TelegramApiException e) {
+            logger.error("Telegram sending message error: ", e);
+        } catch (InvalidCommandException e) {
+            logger.error("Error occurred: ", e);
+        }
+    }
+
     @Override
     public String getBotUsername() {
         return System.getProperty(VmOption.TELEGRAM_BOT_NAME.getKey());

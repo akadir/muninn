@@ -3,6 +3,7 @@ package io.github.akadir.muninn.service;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.UserFriend;
+import io.github.akadir.muninn.model.projections.FriendChangeSet;
 import io.github.akadir.muninn.repository.FriendRepository;
 import io.github.akadir.muninn.repository.UserFriendRepository;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -74,5 +76,9 @@ public class FriendService {
     public void unfollowFriends(AuthenticatedUser user, List<Long> unfollowedIdList) {
         userFriendRepository.unfollow(user.getId(), unfollowedIdList);
         logger.info("User {} unfollowed {} accounts", user.getId(), unfollowedIdList.size());
+    }
+
+    public List<FriendChangeSet> fetchAllChangeSetForUserSinceLastNotifiedTime(Long authenticatedUserId, Date lastNotifiedTime) {
+        return friendRepository.findAllChangeSetForUserSinceLastNotifiedTime(authenticatedUserId, lastNotifiedTime);
     }
 }

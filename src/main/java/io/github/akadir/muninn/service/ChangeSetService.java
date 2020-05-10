@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,5 +34,9 @@ public class ChangeSetService {
         changeSets = changeSetRepository.saveAll(changeSets);
         logger.info("{} ChangeSets saved for user friends: {}", changeSets.size(), user.getId());
         return changeSets;
+    }
+
+    public List<ChangeSet> fetchAllChangeSetForUserSinceLastNotifiedTime(Long authenticatedUserId, Date lastNotifiedTime) {
+        return changeSetRepository.findAllChangeSetForUserSinceLastNotifiedTime(authenticatedUserId, lastNotifiedTime);
     }
 }

@@ -1,6 +1,8 @@
 package io.github.akadir.muninn.scheduled;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.model.AuthenticatedUser;
+import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
@@ -21,18 +23,21 @@ import java.util.List;
  * Time: 20:18
  */
 @Component
-public class ScheduledTasks {
-    private final Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+public class TaskScheduler {
+    private final Logger logger = LoggerFactory.getLogger(TaskScheduler.class);
 
     private final AuthenticatedUserService authenticatedUserService;
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
+    private final TelegramBot telegramBot;
 
     @Autowired
-    public ScheduledTasks(AuthenticatedUserService authenticatedUserService, FriendService friendService, ChangeSetService changeSetService) {
+    public TaskScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
+                         ChangeSetService changeSetService, TelegramBot telegramBot) {
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
+        this.telegramBot = telegramBot;
     }
 
     @Transactional
@@ -43,13 +48,15 @@ public class ScheduledTasks {
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
             for (AuthenticatedUser user : userList) {
-                Muninn muninn = new Muninn(user, authenticatedUserService, friendService, changeSetService);
-                muninn.start();
+                Muninn muninn = new Muninn(user, friendService, changeSetService);
+                //muninn.start();
                 threads.add(muninn);
             }
 
             for (Muninn m : threads) {
                 m.join();
+                Huginn huginn = new Huginn(m.getUser(), authenticatedUserService, friendService, telegramBot);
+                huginn.start();
             }
         } else {
             logger.info("No user found.");
