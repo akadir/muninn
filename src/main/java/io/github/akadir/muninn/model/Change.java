@@ -46,7 +46,7 @@ public class Change {
         } else if (ChangeType.ACCOUNT_STATUS == changeType) {
             TwitterAccountState newState = TwitterAccountState.of(Integer.parseInt(newData));
             TwitterAccountState oldState = TwitterAccountState.of(Integer.parseInt(oldData));
-            return "<b>" + newState.name() + "</b> --> <b>" + oldState.name() + "</b>";
+            return "<b>" + oldState.name() + "</b> --> <b>" + newState.name() + "</b>";
         } else if (ChangeType.PROFILE_PIC == changeType) {
             return "<a href=\"" + oldData +
                     "\"><i>oldest</i></a> --> <a href=\"" + newData + "\"><i>newest</i></a>";
