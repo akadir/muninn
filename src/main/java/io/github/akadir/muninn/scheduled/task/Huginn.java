@@ -54,6 +54,7 @@ public class Huginn extends Thread {
                 .fetchAllChangeSetForUserSinceLastNotifiedTime(user.getId(), user.getLastNotifiedTime());
 
         if (changeSetList.isEmpty()) {
+            logger.info("No changes found for user friends {}", user.getId());
             return;
         }
 
@@ -93,6 +94,7 @@ public class Huginn extends Thread {
                         .setChatId(user.getTelegramChatId())
                         .enableHtml(true)
                         .disableWebPagePreview()
+                        .disableNotification()
                         .setText(message);
 
                 telegramBot.notify(telegramMessage);
@@ -131,7 +133,7 @@ public class Huginn extends Thread {
         } else {
             String lastMessage = messages.get(messages.size() - 1);
 
-            if (lastMessage.length() + message.length() > TELEGRAM_MESSAGE_CHARACTER_LIMIT) {
+            if ((lastMessage.length() + message.length()) > TELEGRAM_MESSAGE_CHARACTER_LIMIT) {
                 messages.add(message);
             } else {
                 lastMessage = lastMessage + message;

@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,7 +39,19 @@ public class FriendService {
         return friends;
     }
 
-    public void saveAllFriends(AuthenticatedUser user, List<Friend> friends) {
+    public List<Friend> findUserFriendsToCheck(Long userId) {
+        UUID uuid = UUID.randomUUID();
+
+        friendRepository.signFriendsToAvailableForFetch(userId, uuid.toString());
+        logger.info("User: {} friends signed with id: {}", userId, uuid);
+
+        List<Friend> friendsToCheck = friendRepository.findUserFriendsToCheck(uuid.toString());
+        logger.info("Friend list with size {} fetched", friendsToCheck.size());
+
+        return friendsToCheck;
+    }
+
+    public synchronized void saveAllFriends(AuthenticatedUser user, List<Friend> friends) {
         if (friends.isEmpty()) {
             return;
         }
@@ -83,7 +92,13 @@ public class FriendService {
         return friendRepository.findAllChangeSetForUserSinceLastNotifiedTime(authenticatedUserId, lastNotifiedTime);
     }
 
-    public Optional<Friend> findByTwitterUserId(Long twitterUserId){
+    public Optional<Friend> findByTwitterUserId(Long twitterUserId) {
         return friendRepository.findByTwitterUserId(twitterUserId);
+    }
+
+    public synchronized Friend saveFriend(Friend friend) {
+        Optional<Friend> optionalFriend = friendRepository.findByTwitterUserId(friend.getTwitterUserId());
+
+        return optionalFriend.orElseGet(() -> friendRepository.save(friend));
     }
 }

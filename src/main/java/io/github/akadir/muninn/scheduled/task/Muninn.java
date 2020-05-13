@@ -16,6 +16,7 @@ import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.UserFriend;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -50,6 +51,7 @@ public class Muninn extends Thread {
         this.changeSetService = changeSetService;
         this.updateCheckerSet = updateCheckerSet;
         this.telegramBot = telegramBot;
+        this.unfollowedFriendList = new ArrayList<>();
     }
 
     @Override
@@ -57,7 +59,7 @@ public class Muninn extends Thread {
         try {
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
             logger.info("Start to checking friend updates for user: {}", user.getTwitterUserId());
-            List<Friend> friends = friendService.findUserFriends(user.getId());
+            List<Friend> friends = friendService.findUserFriendsToCheck(user.getId());
             super.setName("muninn for: " + user.getTwitterUserId());
 
             checkUserFriends(twitter, friends);
@@ -81,31 +83,74 @@ public class Muninn extends Thread {
     }
 
     private void checkUserFriends(Twitter twitter, List<Friend> friends) {
-        List<ChangeSet> changeSets = new ArrayList<>();
-        Set<Long> currentFollowingSet = new HashSet<>();
         Map<Long, Friend> friendIdFriendMap = friends.stream()
                 .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
 
         long cursor = -1;
+        Set<Long> friendIdList = new HashSet<>();
         IDs friendIds;
 
         do {
             friendIds = TwitterBot.getFriendIDs(twitter, user, cursor);
-            changeSets.addAll(checkForFriendUpdates(twitter, friendIds.getIDs(), friendIdFriendMap, currentFollowingSet));
+            friendIdList.addAll(Arrays.asList(ArrayUtils.toObject(friendIds.getIDs())));
         } while ((cursor = friendIds.getNextCursor()) != 0);
 
-        changeSets.addAll(checkUnfollows(twitter, currentFollowingSet, friendIdFriendMap));
+        List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap));
 
         changeSetService.saveAll(user, changeSets);
     }
 
-    private List<ChangeSet> checkUnfollows(Twitter twitter, Set<Long> currentFollowingSet, Map<Long, Friend> oldFollowingMap) {
+    private List<ChangeSet> checkForFriendUpdates(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs) {
         List<ChangeSet> changeSets = new ArrayList<>();
-        unfollowedFriendList = new ArrayList<>();
+        List<Friend> friendList = new ArrayList<>();
+        List<UserFriend> newFollowings = new ArrayList<>();
 
-        for (Map.Entry<Long, Friend> entry : oldFollowingMap.entrySet()) {
-            if (!currentFollowingSet.contains(entry.getKey())) {
-                unfollowedFriendList.add(entry.getValue());
+        changeSets.addAll(checkCurrentFollowings(twitter, friendIds, userFriendsIDs, friendList));
+        changeSets.addAll(checkNewFollowings(twitter, friendIds, userFriendsIDs, friendList, newFollowings));
+
+        friendList.forEach(friend -> friend.setThreadAvailability(0));
+
+        friendService.saveAllFriends(user, friendList);
+        friendService.saveNewFollowings(user, newFollowings);
+
+        return changeSets;
+    }
+
+    private List<ChangeSet> checkCurrentFollowings(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs,
+                                                   List<Friend> friendList) {
+        List<ChangeSet> changeSets = new ArrayList<>();
+
+        for (Map.Entry<Long, Friend> entry : userFriendsIDs.entrySet()) {
+            Long friendId = entry.getKey();
+            Friend friend = entry.getValue();
+            logger.info("Check friend: {}", friend.getUsername());
+            long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(friend.getLastChecked());
+
+            if (hoursSinceLastCheck < ConfigParams.RECHECK_PERIOD) {
+                logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.",
+                        friend.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
+                continue;
+            }
+
+            try {
+                User twitterFriend = TwitterBot.showUser(twitter, user, friendId);
+
+                if (friendIds.contains(friendId)) {
+                    changeSets.addAll(checkUpdates(friend, twitterFriend));
+                    friendList.add(friend);
+                } else {
+                    logger.info("User: {} unfollowed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
+                    unfollowedFriendList.add(friend);
+                }
+            } catch (AccountStatusException e) {
+                logger.error("User with id {} deactivated account or suspended", friendId);
+
+                if (friend.getAccountState() != e.getAccountStatus().getCode()) {
+                    changeSets.add(ChangeSet.changeStatus(friend, TwitterAccountState.of(friend.getAccountState()), e.getAccountStatus()));
+                    friend.setLastChecked(new Date());
+                    friend.setAccountState(e.getAccountStatus().getCode());
+                    friendList.add(friend);
+                }
             }
         }
 
@@ -116,66 +161,36 @@ public class Muninn extends Thread {
         return changeSets;
     }
 
-    private List<ChangeSet> checkForFriendUpdates(Twitter twitter, long[] friendIds, Map<Long, Friend> userFriendsIDs,
-                                                  Set<Long> currentFriendIdSet) {
+    private List<ChangeSet> checkNewFollowings(Twitter twitter, Set<Long> friendIdsFetchedFromTwitter,
+                                               Map<Long, Friend> userFriendsIDs, List<Friend> friendList, List<UserFriend> newFollowings) {
         List<ChangeSet> changeSets = new ArrayList<>();
-        List<Friend> friendList = new ArrayList<>();
-        List<UserFriend> newFollowings = new ArrayList<>();
 
-        for (long friendId : friendIds) {
-            try {
-                User twitterFriend = TwitterBot.showUser(twitter, user, friendId);
-                Friend f;
-                logger.info("Check friend: {}", twitterFriend.getScreenName());
-
-                if (userFriendsIDs.containsKey(friendId)) {
-                    f = userFriendsIDs.get(friendId);
-                    long hoursSinceLastCheck = DateTimeHelper.getTimeDifferenceInHoursSince(f.getLastChecked());
-
-                    if (hoursSinceLastCheck < ConfigParams.RECHECK_PERIOD) {
-                        logger.info("User: {} checked {} hours ago. Will not be checked again for {} for now.",
-                                f.getUsername(), hoursSinceLastCheck, user.getTwitterUserId());
-                        currentFriendIdSet.add(friendId);
-                        continue;
-                    }
-
-                    changeSets.addAll(checkUpdates(f, twitterFriend));
-                } else {
+        for (Long friendId : friendIdsFetchedFromTwitter) {
+            if (!userFriendsIDs.containsKey(friendId)) {
+                try {
+                    User twitterFriend = TwitterBot.showUser(twitter, user, friendId);
                     logger.info("Found new following. User: {} followed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
+
                     Optional<Friend> optionalFriend = friendService.findByTwitterUserId(friendId);
 
+                    Friend f;
                     if (optionalFriend.isPresent()) {
                         f = optionalFriend.get();
                         changeSets.addAll(checkUpdates(f, twitterFriend));
-                        logger.info("new followed friend already exist in database.");
+                        logger.info("new followed friend already exist in db.");
                     } else {
                         f = Friend.from(twitterFriend);
-                        logger.info("new followed friend not exist in database.");
+                        logger.info("new followed friend not exist in our db");
                     }
 
                     UserFriend userFriend = UserFriend.from(user, f);
                     newFollowings.add(userFriend);
-                    userFriendsIDs.put(friendId, f);
-                }
-
-                friendList.add(f);
-                currentFriendIdSet.add(friendId);
-                userFriendsIDs.put(friendId, f);
-            } catch (AccountStatusException e) {
-                logger.error("User with id {} deactivated account or suspended", friendId);
-
-                if (userFriendsIDs.containsKey(friendId)) {
-                    Friend f = userFriendsIDs.get(friendId);
-                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
-                    f.setLastChecked(new Date());
-                    f.setAccountState(e.getAccountStatus().getCode());
                     friendList.add(f);
+                } catch (AccountStatusException e) {
+                    logger.error("Exception occurred while fetching user details: {}", friendId, e);
                 }
             }
         }
-
-        friendService.saveAllFriends(user, friendList);
-        friendService.saveNewFollowings(user, newFollowings);
 
         return changeSets;
     }
@@ -198,9 +213,13 @@ public class Muninn extends Thread {
             try {
                 TwitterBot.showUser(twitter, user, f.getTwitterUserId());
             } catch (AccountStatusException e) {
-                changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
-                f.setLastChecked(new Date());
-                f.setAccountState(e.getAccountStatus().getCode());
+                logger.error("User with id {} deactivated account or suspended", f);
+
+                if (f.getAccountState() != e.getAccountStatus().getCode()) {
+                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
+                    f.setLastChecked(new Date());
+                    f.setAccountState(e.getAccountStatus().getCode());
+                }
             }
         }
 

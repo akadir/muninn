@@ -34,6 +34,12 @@ public class Friend extends BaseModel {
     private int accountState;
     @Column(name = "last_checked")
     private Date lastChecked;
+    @Column(name = "thread_availability")
+    private int threadAvailability;
+    @Column(name = "thread_id")
+    private String threadId;
+    @Column(name = "check_start_time")
+    private Date checkStartTime;
 
     public static Friend from(User user) {
         Friend friend = new Friend();
@@ -45,6 +51,7 @@ public class Friend extends BaseModel {
         friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
         friend.accountState = TwitterAccountState.ACTIVE.getCode();
         friend.lastChecked = new Date();
+        friend.threadAvailability = 1;
 
         return friend;
     }

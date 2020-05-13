@@ -3,7 +3,9 @@ package io.github.akadir.muninn.repository;
 import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -19,6 +21,16 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
             "join UserFriend uf on f.id = uf.friend.id " +
             "join AuthenticatedUser au on au.id = uf.follower.id where au.id = ?1")
     List<Friend> findUserFriends(Long userId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update friend f set thread_availability = 1, thread_id = ?2, check_start_time = now()" +
+            "from user_friend as uf " +
+            "where f.id = uf.friend_id and uf.follower_id = ?1 and (f.thread_availability is null or f.thread_availability = 0)", nativeQuery = true)
+    void signFriendsToAvailableForFetch(Long userId, String threadId);
+
+    @Query(value = "select * from friend where thread_id = ?1", nativeQuery = true)
+    List<Friend> findUserFriendsToCheck(String threadId);
 
     List<Friend> findAllByTwitterUserIdIn(List<Long> twitterUserIdList);
 
