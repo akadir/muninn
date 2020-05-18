@@ -51,7 +51,7 @@ public class FriendService {
         return friendsToCheck;
     }
 
-    public synchronized void saveAllFriends(AuthenticatedUser user, List<Friend> friends) {
+    public void saveAllFriends(AuthenticatedUser user, List<Friend> friends) {
         if (friends.isEmpty()) {
             return;
         }
@@ -81,6 +81,11 @@ public class FriendService {
 
         newFollowings = userFriendRepository.saveAll(newFollowings);
         logger.info("{} new followings saved for user: {} ", newFollowings.size(), user.getId());
+    }
+
+    public void saveNewFollowing(AuthenticatedUser user, UserFriend newFollowing) {
+        userFriendRepository.save(newFollowing);
+        logger.info("New followings saved for user: {} ", user.getId());
     }
 
     public void unfollowFriends(AuthenticatedUser user, List<Long> unfollowedIdList) {

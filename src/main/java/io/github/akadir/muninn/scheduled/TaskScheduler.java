@@ -46,12 +46,14 @@ public class TaskScheduler {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 1000 * 60 * 5, initialDelay = 1000 * 3)
+    @Scheduled(fixedDelay = 1000 * 60 * 60, initialDelay = 1000 * 3)
     public void checkFriends() throws InterruptedException {
         List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
         List<Muninn> threads = new ArrayList<>();
+
         if (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
+
             for (AuthenticatedUser user : userList) {
                 Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers, telegramBot);
                 muninn.start();
@@ -60,20 +62,30 @@ public class TaskScheduler {
 
             for (Muninn m : threads) {
                 m.join();
-            }
-
-            for (Muninn m : threads) {
                 AuthenticatedUser user = m.getUser();
-                user = authenticatedUserService.updateLastCheckedTime(user);
-
-                if (user.getBotStatus() == TelegramBotStatus.ACTIVE.getCode()) {
-                    Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot,
-                            m.getUnfollowedFriendList());
-                    huginn.start();
-                }
+                authenticatedUserService.updateLastCheckedTime(user);
             }
         } else {
             logger.info("No user found.");
+        }
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 9-18/3 * * *")
+    public void notifyUsers() throws InterruptedException {
+        List<AuthenticatedUser> userList = authenticatedUserService.getUsersToNotify();
+        List<Huginn> threads = new ArrayList<>();
+
+        for (AuthenticatedUser user : userList) {
+            if (user.getBotStatus() == TelegramBotStatus.ACTIVE.getCode()) {
+                Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
+                huginn.start();
+                threads.add(huginn);
+            }
+        }
+
+        for (Huginn huginn : threads) {
+            huginn.join();
         }
     }
 }

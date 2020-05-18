@@ -41,8 +41,6 @@ public class Muninn extends Thread {
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckerSet;
     private final TelegramBot telegramBot;
-    private List<Friend> unfollowedFriendList;
-
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
                   Set<UpdateChecker> updateCheckerSet, TelegramBot telegramBot) {
@@ -51,7 +49,6 @@ public class Muninn extends Thread {
         this.changeSetService = changeSetService;
         this.updateCheckerSet = updateCheckerSet;
         this.telegramBot = telegramBot;
-        this.unfollowedFriendList = new ArrayList<>();
     }
 
     @Override
@@ -59,10 +56,10 @@ public class Muninn extends Thread {
         try {
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
             logger.info("Start to checking friend updates for user: {}", user.getTwitterUserId());
-            List<Friend> friends = friendService.findUserFriendsToCheck(user.getId());
+            List<Friend> friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
             super.setName("muninn for: " + user.getTwitterUserId());
 
-            checkUserFriends(twitter, friends);
+            checkUserFriends(twitter, friendsToCheck);
             logger.info("Finish to checking friend updates for user: {}", user.getTwitterUserId());
         } catch (AccountSuspendedException | TokenExpiredException e) {
             logger.error("User token expired: {}", user.getId());
@@ -82,9 +79,11 @@ public class Muninn extends Thread {
         }
     }
 
-    private void checkUserFriends(Twitter twitter, List<Friend> friends) {
-        Map<Long, Friend> friendIdFriendMap = friends.stream()
+    private void checkUserFriends(Twitter twitter, List<Friend> friendsToCheck) {
+        Map<Long, Friend> friendIdFriendMap = friendsToCheck.stream()
                 .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
+
+        List<Friend> userFriends = friendService.findUserFriends(user.getId());
 
         long cursor = -1;
         Set<Long> friendIdList = new HashSet<>();
@@ -95,30 +94,27 @@ public class Muninn extends Thread {
             friendIdList.addAll(Arrays.asList(ArrayUtils.toObject(friendIds.getIDs())));
         } while ((cursor = friendIds.getNextCursor()) != 0);
 
-        List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap));
-
+        List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap,
+                userFriends));
         changeSetService.saveAll(user, changeSets);
+        logger.info("Saved {} change set for user with id: {}", changeSets.size(), user.getId());
+
+        checkUnfollows(friendIdList, userFriends);
     }
 
-    private List<ChangeSet> checkForFriendUpdates(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs) {
+    private List<ChangeSet> checkForFriendUpdates(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs,
+                                                  List<Friend> userFriends) {
         List<ChangeSet> changeSets = new ArrayList<>();
-        List<Friend> friendList = new ArrayList<>();
-        List<UserFriend> newFollowings = new ArrayList<>();
 
-        changeSets.addAll(checkCurrentFollowings(twitter, friendIds, userFriendsIDs, friendList));
-        changeSets.addAll(checkNewFollowings(twitter, friendIds, userFriendsIDs, friendList, newFollowings));
-
-        friendList.forEach(friend -> friend.setThreadAvailability(0));
-
-        friendService.saveAllFriends(user, friendList);
-        friendService.saveNewFollowings(user, newFollowings);
+        changeSets.addAll(checkCurrentFollowings(twitter, userFriendsIDs));
+        changeSets.addAll(checkNewFollowings(twitter, friendIds, userFriends));
 
         return changeSets;
     }
 
-    private List<ChangeSet> checkCurrentFollowings(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs,
-                                                   List<Friend> friendList) {
+    private List<ChangeSet> checkCurrentFollowings(Twitter twitter, Map<Long, Friend> userFriendsIDs) {
         List<ChangeSet> changeSets = new ArrayList<>();
+        List<Friend> friendList = new ArrayList<>();
 
         for (Map.Entry<Long, Friend> entry : userFriendsIDs.entrySet()) {
             Long friendId = entry.getKey();
@@ -135,15 +131,10 @@ public class Muninn extends Thread {
             try {
                 User twitterFriend = TwitterBot.showUser(twitter, user, friendId);
 
-                if (friendIds.contains(friendId)) {
-                    changeSets.addAll(checkUpdates(friend, twitterFriend));
-                    friendList.add(friend);
-                } else {
-                    logger.info("User: {} unfollowed {}", user.getTwitterUserId(), twitterFriend.getScreenName());
-                    unfollowedFriendList.add(friend);
-                }
+                changeSets.addAll(checkUpdates(friend, twitterFriend));
+                friendList.add(friend);
             } catch (AccountStatusException e) {
-                logger.error("User with id {} deactivated account or suspended", friendId);
+                logger.warn("User with id {} deactivated account or suspended", friendId);
 
                 if (friend.getAccountState() != e.getAccountStatus().getCode()) {
                     changeSets.add(ChangeSet.changeStatus(friend, TwitterAccountState.of(friend.getAccountState()), e.getAccountStatus()));
@@ -154,15 +145,16 @@ public class Muninn extends Thread {
             }
         }
 
-        if (!unfollowedFriendList.isEmpty()) {
-            changeSets = checkUnfollowedUsersStatuses(twitter, unfollowedFriendList);
-        }
+        friendList.forEach(friend -> friend.setThreadAvailability(0));
+        friendService.saveAllFriends(user, friendList);
 
         return changeSets;
     }
 
-    private List<ChangeSet> checkNewFollowings(Twitter twitter, Set<Long> friendIdsFetchedFromTwitter,
-                                               Map<Long, Friend> userFriendsIDs, List<Friend> friendList, List<UserFriend> newFollowings) {
+    private List<ChangeSet> checkNewFollowings(Twitter twitter, Set<Long> friendIdsFetchedFromTwitter, List<Friend> userFriends) {
+        Map<Long, Friend> userFriendsIDs = userFriends.stream()
+                .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
+
         List<ChangeSet> changeSets = new ArrayList<>();
 
         for (Long friendId : friendIdsFetchedFromTwitter) {
@@ -176,7 +168,6 @@ public class Muninn extends Thread {
                     Friend f;
                     if (optionalFriend.isPresent()) {
                         f = optionalFriend.get();
-                        changeSets.addAll(checkUpdates(f, twitterFriend));
                         logger.info("new followed friend already exist in db.");
                     } else {
                         f = Friend.from(twitterFriend);
@@ -184,8 +175,8 @@ public class Muninn extends Thread {
                     }
 
                     UserFriend userFriend = UserFriend.from(user, f);
-                    newFollowings.add(userFriend);
-                    friendList.add(f);
+                    friendService.saveFriend(f);
+                    friendService.saveNewFollowing(user, userFriend);
                 } catch (AccountStatusException e) {
                     logger.error("Exception occurred while fetching user details: {}", friendId, e);
                 }
@@ -193,6 +184,28 @@ public class Muninn extends Thread {
         }
 
         return changeSets;
+    }
+
+    private void checkUnfollows(Set<Long> friendIdList, List<Friend> userFriends) {
+        Map<Long, Friend> userFriendsIDs = userFriends.stream()
+                .collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
+        List<Long> unfollows = new ArrayList<>();
+
+        for (Map.Entry<Long, Friend> entry : userFriendsIDs.entrySet()) {
+            Long id = entry.getKey();
+            Friend friend = entry.getValue();
+
+            if (!friendIdList.contains(id)) {
+                unfollows.add(friend.getId());
+            }
+        }
+
+        if (!unfollows.isEmpty()) {
+            friendService.unfollowFriends(user, unfollows);
+            logger.info("User with id: {} unfollowed {} accounts.", user.getId(), unfollows.size());
+        }
+
+        logger.info("Unfollows checked for user: {}", user.getId());
     }
 
     private List<ChangeSet> checkUpdates(Friend f, User u) {
@@ -206,31 +219,8 @@ public class Muninn extends Thread {
         return listOfChanges;
     }
 
-    public List<ChangeSet> checkUnfollowedUsersStatuses(Twitter twitter, List<Friend> unfollowedFriendList) {
-        List<ChangeSet> changeSets = new ArrayList<>();
-
-        for (Friend f : unfollowedFriendList) {
-            try {
-                TwitterBot.showUser(twitter, user, f.getTwitterUserId());
-            } catch (AccountStatusException e) {
-                logger.error("User with id {} deactivated account or suspended", f);
-
-                if (f.getAccountState() != e.getAccountStatus().getCode()) {
-                    changeSets.add(ChangeSet.changeStatus(f, TwitterAccountState.of(f.getAccountState()), e.getAccountStatus()));
-                    f.setLastChecked(new Date());
-                    f.setAccountState(e.getAccountStatus().getCode());
-                }
-            }
-        }
-
-        return changeSets;
-    }
 
     public AuthenticatedUser getUser() {
         return user;
-    }
-
-    public List<Friend> getUnfollowedFriendList() {
-        return unfollowedFriendList;
     }
 }
