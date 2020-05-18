@@ -19,12 +19,10 @@ import static io.github.akadir.muninn.helper.Constants.OLD_TAG;
  */
 public class DiffHelper {
     private static final Logger logger = LoggerFactory.getLogger(DiffHelper.class);
+    private static final DiffRowGenerator generator;
 
-    private DiffHelper() {
-    }
-
-    public static String generateDiff(String oldData, String newData) {
-        DiffRowGenerator generator = DiffRowGenerator
+    static {
+        generator = DiffRowGenerator
                 .create()
                 .showInlineDiffs(true)
                 .mergeOriginalRevised(true)
@@ -32,8 +30,12 @@ public class DiffHelper {
                 .oldTag(f -> Boolean.TRUE.equals(f) ? "<strike>" : "</strike>")
                 .newTag(f -> Boolean.TRUE.equals(f) ? "<b>" : "</b>")
                 .build();
+    }
 
+    private DiffHelper() {
+    }
 
+    public static String generateDiff(String oldData, String newData) {
         try {
             List<DiffRow> rows = generator.generateDiffRows(
                     Collections.singletonList(oldData),
