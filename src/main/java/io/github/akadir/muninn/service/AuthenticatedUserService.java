@@ -54,6 +54,10 @@ public class AuthenticatedUserService {
         return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), recheckedPeriodHoursBefore);
     }
 
+    public List<AuthenticatedUser> getUsersToNotify() {
+        return authenticatedUserRepository.findAllByBotStatus(TelegramBotStatus.ACTIVE.getCode());
+    }
+
     public AuthenticatedUser updateUserNotifiedTime(AuthenticatedUser user) {
         user.setLastNotifiedTime(new Date());
         return authenticatedUserRepository.save(user);

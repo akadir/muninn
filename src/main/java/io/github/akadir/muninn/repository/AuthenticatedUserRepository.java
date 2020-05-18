@@ -14,11 +14,11 @@ import java.util.Optional;
  * Time: 19:35
  */
 public interface AuthenticatedUserRepository extends JpaRepository<AuthenticatedUser, Long> {
-    List<AuthenticatedUser> findAll();
-
     Optional<AuthenticatedUser> findByTelegramUserIdAndBotStatus(Integer telegramUserId, int botStatus);
 
     @Query("select u from AuthenticatedUser u where u.botStatus = ?1 " +
             "and (u.lastCheckedTime < ?2 or u.lastCheckedTime is null)")
     List<AuthenticatedUser> findUsersToCheckFriends(int isBotActive, Date date);
+
+    List<AuthenticatedUser> findAllByBotStatus(int botStatus);
 }

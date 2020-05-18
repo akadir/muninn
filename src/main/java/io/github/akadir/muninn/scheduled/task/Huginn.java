@@ -4,7 +4,6 @@ import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.model.Change;
-import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.FriendService;
@@ -32,15 +31,13 @@ public class Huginn extends Thread {
     private final AuthenticatedUserService authenticatedUserService;
     private final FriendService friendService;
     private final TelegramBot telegramBot;
-    private final List<Friend> unfollowedFriendList;
 
     public Huginn(AuthenticatedUser user, AuthenticatedUserService authenticatedUserService,
-                  FriendService friendService, TelegramBot telegramBot, List<Friend> unfollowedFriendList) {
+                  FriendService friendService, TelegramBot telegramBot) {
         this.user = user;
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.telegramBot = telegramBot;
-        this.unfollowedFriendList = unfollowedFriendList;
     }
 
     @Override
@@ -102,10 +99,6 @@ public class Huginn extends Thread {
             }
 
             user = authenticatedUserService.updateUserNotifiedTime(user);
-        }
-
-        if (unfollowedFriendList != null && !unfollowedFriendList.isEmpty()) {
-            friendService.unfollowFriends(user, unfollowedFriendList.stream().map(Friend::getId).collect(Collectors.toList()));
         }
     }
 
