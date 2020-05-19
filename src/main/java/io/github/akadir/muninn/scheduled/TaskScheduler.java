@@ -46,7 +46,7 @@ public class TaskScheduler {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 1000 * 60 * 60, initialDelay = 1000 * 3)
+    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 10)
     public void checkFriends() throws InterruptedException {
         List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
         List<Muninn> threads = new ArrayList<>();
@@ -71,7 +71,7 @@ public class TaskScheduler {
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 9-18/3 * * *")
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 3, initialDelay = 1000 * 30)
     public void notifyUsers() throws InterruptedException {
         List<AuthenticatedUser> userList = authenticatedUserService.getUsersToNotify();
         List<Huginn> threads = new ArrayList<>();
