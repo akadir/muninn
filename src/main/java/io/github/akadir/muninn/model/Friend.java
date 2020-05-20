@@ -51,7 +51,7 @@ public class Friend extends BaseModel {
         friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
         friend.accountState = TwitterAccountState.ACTIVE.getCode();
         friend.lastChecked = new Date();
-        friend.threadAvailability = 1;
+        friend.threadAvailability = 0;
 
         return friend;
     }
