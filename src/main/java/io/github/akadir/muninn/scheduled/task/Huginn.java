@@ -104,20 +104,20 @@ public class Huginn extends Thread {
 
     private void generateMessage(String username, Map<Integer, List<Change>> uniqueChanges, List<String> messages) {
         StringBuilder mb = new StringBuilder("\n\n<a href=\"https://twitter.com/")
-                .append(username).append("\"><b>").append(username).append("</b></a> has changed: \n");
+                .append(username).append("\"><b>").append(username).append("</b></a> updated:");
 
         for (Map.Entry<Integer, List<Change>> entry : uniqueChanges.entrySet()) {
             ChangeType changeType = ChangeType.of(entry.getKey());
 
             List<Change> changes = entry.getValue();
 
-            mb.append("\n\n<b>").append(changeType.name()).append("</b>[<i>").append(changes.size()).append("</i>]:\n");
+            mb.append("\n<b>").append(changeType.name()).append("</b>[<i>").append(changes.size()).append("</i>]:");
 
             Change oldestToNewest = Change.from(changes.get(0), changes.get(changes.size() - 1));
-            mb.append("\n").append(oldestToNewest);
+            mb.append(oldestToNewest);
         }
 
-        mb.append("\n\n--------");
+        mb.append("\n—————————————————————");
 
         String message = mb.toString();
 
