@@ -22,7 +22,7 @@ public class DiffHelper {
     private static final DiffRowGenerator generator;
 
     private static final Function<Boolean, String> DELETED_TAG = f -> Boolean.TRUE.equals(f) ? "<strike>" : "</strike>";
-    private static final Function<Boolean, String> INSERTED_TAG = f -> Boolean.TRUE.equals(f) ? "<b>" : "</b>";
+    private static final Function<Boolean, String> INSERTED_TAG = f -> Boolean.TRUE.equals(f) ? "<u><b>" : "</b></u>";
 
     static {
         generator = DiffRowGenerator

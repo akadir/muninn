@@ -15,10 +15,10 @@ public class DiffHelperTest {
     @Test
     public void generateDiffGoogle() {
         String diff = DiffHelper.generateDiffGoogle("Hello World", "Goodbye World");
-
-        Assert.assertEquals("<strike>Hello</strike><b>Goodbye</b> World", diff);
+        Assert.assertEquals("<strike>Hello</strike><u><b>Goodbye</b></u> World", diff);
 
         diff = DiffHelper.generateDiffGoogle("In GOD We Trust ❤️", "InGODweTRUST❤️");
+        Assert.assertEquals("In<strike> </strike>GOD<strike> We Trust </strike><u><b>weTRUST</b></u>❤️", diff);
     }
 
 }
