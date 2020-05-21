@@ -66,7 +66,7 @@ public class Muninn extends Thread {
 
             user.setBotStatus(TelegramBotStatus.NOT_ACTIVE.getCode());
 
-            String message = "Your twitter account logged out from <b>Muninn</b> bot.\n\n You should login again to use <b>Muninn</b>.";
+            String message = "Access to your twitter account was revoked.\n\nYou should login again to activate <b>Muninn</b>.";
 
             SendMessage telegramMessage = new SendMessage()
                     .setChatId(user.getTelegramChatId())
