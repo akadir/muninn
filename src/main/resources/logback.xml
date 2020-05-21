@@ -22,7 +22,7 @@
             <fileNamePattern>log/old/worm-%d{yyyy-MM-dd, GMT+3}.log.gz</fileNamePattern>
         </rollingPolicy>
         <encoder>
-            <pattern>%-5p %d{yyyy-MM-dd HH:mm:ss} %-35c{1} %m%n</pattern>
+            <pattern>%highlight(%-5p) %d{yyyy-MM-dd HH:mm:ss} %cyan(%-33c{1}) %boundedMsg%n</pattern>
         </encoder>
     </appender>
 
