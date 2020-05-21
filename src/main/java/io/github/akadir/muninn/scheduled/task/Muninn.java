@@ -5,6 +5,7 @@ import io.github.akadir.muninn.bot.TwitterBot;
 import io.github.akadir.muninn.checker.UpdateChecker;
 import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
+import io.github.akadir.muninn.enumeration.ThreadAvailability;
 import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import io.github.akadir.muninn.exception.AccountSuspendedException;
 import io.github.akadir.muninn.exception.TokenExpiredException;
@@ -53,10 +54,11 @@ public class Muninn extends Thread {
 
     @Override
     public void run() {
+        List<Friend> friendsToCheck = null;
         try {
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
             logger.info("Start checking friend updates for user: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
-            List<Friend> friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
+            friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
             super.setName("muninn for: " + user.getTwitterUserId());
 
             checkUserFriends(twitter, friendsToCheck);
@@ -77,6 +79,13 @@ public class Muninn extends Thread {
 
             telegramBot.notify(telegramMessage);
             logger.info("Message send: {}", message);
+        } catch (Exception e) {
+            logger.error("Exception occurred during muninn run: ", e);
+
+            if (friendsToCheck != null) {
+                logger.warn("Mark all friends({}) as available for next thread call", friendsToCheck.size());
+                friendsToCheck.forEach(f -> f.setThreadAvailability(ThreadAvailability.NOT_AVAILABLE.getCode()));
+            }
         }
     }
 
@@ -146,7 +155,7 @@ public class Muninn extends Thread {
             }
         }
 
-        friendList.forEach(friend -> friend.setThreadAvailability(0));
+        friendList.forEach(friend -> friend.setThreadAvailability(ThreadAvailability.AVAILABLE.getCode()));
         friendService.saveAllFriends(user, friendList);
 
         return changeSets;
@@ -179,7 +188,7 @@ public class Muninn extends Thread {
                     friendService.saveFriend(f);
                     friendService.saveNewFollowing(user, userFriend);
                 } catch (AccountStatusException e) {
-                    logger.error("Exception occurred while fetching user details: {}", friendId, e);
+                    logger.error("User suspended or deactivated its account: {}", friendId, e);
                 }
             }
         }

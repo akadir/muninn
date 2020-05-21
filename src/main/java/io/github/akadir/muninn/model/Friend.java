@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.model;
 
+import io.github.akadir.muninn.enumeration.ThreadAvailability;
 import io.github.akadir.muninn.enumeration.TwitterAccountState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -51,7 +52,7 @@ public class Friend extends BaseModel {
         friend.profilePicUrl = user.get400x400ProfileImageURLHttps();
         friend.accountState = TwitterAccountState.ACTIVE.getCode();
         friend.lastChecked = new Date();
-        friend.threadAvailability = 0;
+        friend.threadAvailability = ThreadAvailability.AVAILABLE.getCode();
 
         return friend;
     }
