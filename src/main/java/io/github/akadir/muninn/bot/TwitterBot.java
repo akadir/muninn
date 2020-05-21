@@ -89,6 +89,7 @@ public class TwitterBot {
             throw new UserSuspendedException();
         } else if (errorCode == TwitterError.RATE_LIMIT_EXCEEDED.getCode()
                 || errorCode == TwitterError.OVER_CAPACITY.getCode()) {
+            LOGGER.warn("Rate limit hit. Wait little bit.");
             RateLimitHandler.handle(id, null, apiProcessType);
         } else {
             throw new ProxyTwitterException(e);

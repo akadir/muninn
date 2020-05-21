@@ -55,14 +55,14 @@ public class Muninn extends Thread {
     public void run() {
         try {
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
-            logger.info("Start to checking friend updates for user: {}", user.getTwitterUserId());
+            logger.info("Start checking friend updates for user: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
             List<Friend> friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
             super.setName("muninn for: " + user.getTwitterUserId());
 
             checkUserFriends(twitter, friendsToCheck);
-            logger.info("Finish to checking friend updates for user: {}", user.getTwitterUserId());
+            logger.info("Finish checking friend updates for user: {}", user.getTwitterUserId());
         } catch (AccountSuspendedException | TokenExpiredException e) {
-            logger.error("User token expired: {}", user.getId());
+            logger.error("User token expired: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
 
             user.setBotStatus(TelegramBotStatus.NOT_ACTIVE.getCode());
 
@@ -98,7 +98,7 @@ public class Muninn extends Thread {
         List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap,
                 userFriends));
         changeSetService.saveAll(user, changeSets);
-        logger.info("Saved {} change set for user with id: {}", changeSets.size(), user.getId());
+        logger.info("Saved {} change set for user with twitter-id: {} db-id: {}", changeSets.size(), user.getTwitterUserId(), user.getId());
 
         checkUnfollows(friendIdList, userFriends);
     }
