@@ -1,91 +1,26 @@
 package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
-import io.github.akadir.muninn.checker.UpdateChecker;
-import io.github.akadir.muninn.enumeration.TelegramBotStatus;
-import io.github.akadir.muninn.model.AuthenticatedUser;
-import io.github.akadir.muninn.scheduled.task.Huginn;
-import io.github.akadir.muninn.scheduled.task.Muninn;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
-import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author akadir
  * Date: 6.05.2020
  * Time: 20:18
  */
-@Component
-public class TaskScheduler {
-    private final Logger logger = LoggerFactory.getLogger(TaskScheduler.class);
+public abstract class TaskScheduler {
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final AuthenticatedUserService authenticatedUserService;
-    private final FriendService friendService;
-    private final ChangeSetService changeSetService;
-    private final TelegramBot telegramBot;
-    private final Set<UpdateChecker> updateCheckers;
+    protected final AuthenticatedUserService authenticatedUserService;
+    protected final FriendService friendService;
+    protected final TelegramBot telegramBot;
 
-    @Autowired
-    public TaskScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
-                         ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers) {
+    public TaskScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService, TelegramBot telegramBot) {
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
-        this.changeSetService = changeSetService;
         this.telegramBot = telegramBot;
-        this.updateCheckers = updateCheckers;
-    }
-
-    @Transactional
-    @Scheduled(fixedDelay = 1000 * 60 * 30, initialDelay = 1000 * 10)
-    public void checkFriends() throws InterruptedException {
-        List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
-        List<Muninn> threads = new ArrayList<>();
-
-        if (!userList.isEmpty()) {
-            logger.info("Found {} users to check", userList.size());
-
-            for (AuthenticatedUser user : userList) {
-                Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers, telegramBot);
-                muninn.start();
-                threads.add(muninn);
-            }
-
-            for (Muninn m : threads) {
-                m.join();
-                AuthenticatedUser user = m.getUser();
-                authenticatedUserService.updateLastCheckedTime(user);
-            }
-        } else {
-            logger.info("No user found.");
-        }
-    }
-
-    @Transactional
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 3, initialDelay = 1000 * 30)
-    public void notifyUsers() throws InterruptedException {
-        List<AuthenticatedUser> userList = authenticatedUserService.getUsersToNotify();
-        List<Huginn> threads = new ArrayList<>();
-
-        for (AuthenticatedUser user : userList) {
-            if (user.getBotStatus() == TelegramBotStatus.ACTIVE.getCode()) {
-                Huginn huginn = new Huginn(user, authenticatedUserService, friendService, telegramBot);
-                huginn.start();
-                threads.add(huginn);
-            }
-        }
-
-        for (Huginn huginn : threads) {
-            huginn.join();
-        }
     }
 }
