@@ -42,7 +42,7 @@ public class Change {
         ChangeType changeType = ChangeType.of(type);
 
         if (ChangeType.BIO == changeType || ChangeType.USERNAME == changeType || ChangeType.NAME == changeType) {
-            return DiffHelper.generateDiff(oldData, newData);
+            return DiffHelper.generateDiffGoogle(oldData, newData);
         } else if (ChangeType.ACCOUNT_STATUS == changeType) {
             TwitterAccountState newState = TwitterAccountState.of(Integer.parseInt(newData));
             TwitterAccountState oldState = TwitterAccountState.of(Integer.parseInt(oldData));
