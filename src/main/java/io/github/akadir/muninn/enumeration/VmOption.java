@@ -8,7 +8,7 @@ package io.github.akadir.muninn.enumeration;
 public enum VmOption {
     TELEGRAM_BOT_NAME("telegram.bot.name"),
     TELEGRAM_TOKEN("telegram.token"),
-    TWITTER_CONSUMER_KEY("twitter.consume.key"),
+    TWITTER_CONSUMER_KEY("twitter.consumer.key"),
     TWITTER_CONSUMER_SECRET("twitter.consumer.secret"),
     RECHECK_PERIOD("muninn.recheck.period"),
     DATA_SOURCE_URL("data.source.url"),
