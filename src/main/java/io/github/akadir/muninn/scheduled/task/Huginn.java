@@ -5,16 +5,12 @@ import io.github.akadir.muninn.enumeration.ChangeType;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.model.Change;
 import io.github.akadir.muninn.model.projections.FriendChangeSet;
-import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.FriendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.github.akadir.muninn.helper.Constants.TELEGRAM_MESSAGE_CHARACTER_LIMIT;
@@ -27,15 +23,12 @@ import static io.github.akadir.muninn.helper.Constants.TELEGRAM_MESSAGE_CHARACTE
 public class Huginn extends Thread {
     private final Logger logger = LoggerFactory.getLogger(Huginn.class);
 
-    private AuthenticatedUser user;
-    private final AuthenticatedUserService authenticatedUserService;
+    private final AuthenticatedUser user;
     private final FriendService friendService;
     private final TelegramBot telegramBot;
 
-    public Huginn(AuthenticatedUser user, AuthenticatedUserService authenticatedUserService,
-                  FriendService friendService, TelegramBot telegramBot) {
+    public Huginn(AuthenticatedUser user, FriendService friendService, TelegramBot telegramBot) {
         this.user = user;
-        this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.telegramBot = telegramBot;
     }
@@ -98,7 +91,7 @@ public class Huginn extends Thread {
                 logger.info("Message send: {}", message);
             }
 
-            user = authenticatedUserService.updateUserNotifiedTime(user);
+            user.setLastNotifiedTime(new Date());
         }
     }
 
@@ -133,5 +126,9 @@ public class Huginn extends Thread {
                 messages.set(messages.size() - 1, lastMessage);
             }
         }
+    }
+
+    public AuthenticatedUser getUser() {
+        return user;
     }
 }

@@ -62,6 +62,7 @@ public class Muninn extends Thread {
             super.setName("muninn for: " + user.getTwitterUserId());
 
             checkUserFriends(twitter, friendsToCheck);
+
             logger.info("Finish checking friend updates for user: {}", user.getTwitterUserId());
         } catch (AccountSuspendedException | TokenExpiredException e) {
             logger.error("User token expired: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
@@ -104,12 +105,15 @@ public class Muninn extends Thread {
             friendIdList.addAll(Arrays.asList(ArrayUtils.toObject(friendIds.getIDs())));
         } while ((cursor = friendIds.getNextCursor()) != 0);
 
-        List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap,
-                userFriends));
+        List<ChangeSet> changeSets = new ArrayList<>(checkForFriendUpdates(twitter, friendIdList, friendIdFriendMap, userFriends));
+
         changeSetService.saveAll(user, changeSets);
+
         logger.info("Saved {} change set for user with twitter-id: {} db-id: {}", changeSets.size(), user.getTwitterUserId(), user.getId());
 
         checkUnfollows(friendIdList, userFriends);
+
+        user.setLastCheckedTime(new Date());
     }
 
     private List<ChangeSet> checkForFriendUpdates(Twitter twitter, Set<Long> friendIds, Map<Long, Friend> userFriendsIDs,
@@ -228,7 +232,6 @@ public class Muninn extends Thread {
         f.setLastChecked(new Date());
         return listOfChanges;
     }
-
 
     public AuthenticatedUser getUser() {
         return user;

@@ -54,8 +54,16 @@ public class AuthenticatedUserService {
         return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), recheckedPeriodHoursBefore);
     }
 
+    public List<AuthenticatedUser> getActiveUsers() {
+        return authenticatedUserRepository.findAllByBotStatus(TelegramBotStatus.ACTIVE.getCode());
+    }
+
     public List<AuthenticatedUser> getUsersToNotify() {
         return authenticatedUserRepository.findAllByBotStatus(TelegramBotStatus.ACTIVE.getCode());
+    }
+
+    public AuthenticatedUser updateUser(AuthenticatedUser user) {
+        return authenticatedUserRepository.save(user);
     }
 
     public AuthenticatedUser updateUserNotifiedTime(AuthenticatedUser user) {

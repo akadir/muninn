@@ -61,7 +61,7 @@ public class TwitterBot {
     }
 
     public static User showUser(Twitter twitter, @NotNull AuthenticatedUser authUser, long userId) {
-        User user = null;
+        User user;
 
         try {
             user = twitter.showUser(userId);
