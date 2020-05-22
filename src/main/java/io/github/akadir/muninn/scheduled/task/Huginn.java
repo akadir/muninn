@@ -40,6 +40,7 @@ public class Huginn extends Thread {
     }
 
     private void notifyUser() {
+        super.setName("muninn for: " + user.getTwitterUserId());
         List<FriendChangeSet> changeSetList = friendService
                 .fetchAllChangeSetForUserSinceLastNotifiedTime(user.getId(), user.getLastNotifiedTime());
 

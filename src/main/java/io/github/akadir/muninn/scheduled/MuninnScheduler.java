@@ -87,15 +87,14 @@ public class MuninnScheduler extends TaskScheduler {
         for (Muninn m : muninns) {
             Huginn huginn = new Huginn(m.getUser(), friendService, telegramBot);
             huginn.start();
+            logger.info("Huginn: {} started", huginn.getName());
             huginns.add(huginn);
         }
 
         for (Huginn h : huginns) {
             h.join();
-            AuthenticatedUser user = h.getUser();
-            authenticatedUserService.updateUser(user);
-            userList.add(user);
-            logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
+            logger.info("Huginn: {} finished", h.getName());
+            userList.add(h.getUser());
         }
 
         return userList;

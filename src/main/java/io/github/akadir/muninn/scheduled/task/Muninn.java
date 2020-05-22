@@ -56,10 +56,10 @@ public class Muninn extends Thread {
     public void run() {
         List<Friend> friendsToCheck = null;
         try {
+            super.setName("muninn for: " + user.getTwitterUserId());
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
             logger.info("Start checking friend updates for user: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
             friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
-            super.setName("muninn for: " + user.getTwitterUserId());
 
             checkUserFriends(twitter, friendsToCheck);
 
