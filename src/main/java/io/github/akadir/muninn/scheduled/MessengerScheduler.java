@@ -68,7 +68,7 @@ public class MessengerScheduler {
 
         long executionTime = System.currentTimeMillis() - start;
 
-        logger.info("Scheduled finished. duration: {}", executionTime);
+        logger.info("Scheduled task finished. duration in ms: {}", executionTime);
     }
 
     private List<Muninn> runMuninn(List<AuthenticatedUser> users) throws InterruptedException {
