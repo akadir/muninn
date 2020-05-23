@@ -42,7 +42,7 @@ public class Muninn extends Thread {
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckerSet;
     private final TelegramBot telegramBot;
-    private List<Long> unfollows;
+    private final List<Long> unfollows;
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
                   Set<UpdateChecker> updateCheckerSet, TelegramBot telegramBot) {
