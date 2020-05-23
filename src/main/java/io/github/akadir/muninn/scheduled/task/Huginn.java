@@ -26,11 +26,13 @@ public class Huginn extends Thread {
     private final AuthenticatedUser user;
     private final FriendService friendService;
     private final TelegramBot telegramBot;
+    private final List<Long> unfollows;
 
-    public Huginn(AuthenticatedUser user, FriendService friendService, TelegramBot telegramBot) {
+    public Huginn(AuthenticatedUser user, FriendService friendService, TelegramBot telegramBot, List<Long> unfollows) {
         this.user = user;
         this.friendService = friendService;
         this.telegramBot = telegramBot;
+        this.unfollows = unfollows;
     }
 
     @Override
@@ -40,7 +42,7 @@ public class Huginn extends Thread {
     }
 
     private void notifyUser() {
-        super.setName("muninn for: " + user.getTwitterUserId());
+        super.setName("huginn for: " + user.getTwitterUserId());
         List<FriendChangeSet> changeSetList = friendService
                 .fetchAllChangeSetForUserSinceLastNotifiedTime(user.getId(), user.getLastNotifiedTime());
 
@@ -94,6 +96,9 @@ public class Huginn extends Thread {
 
             user.setLastNotifiedTime(new Date());
         }
+
+        unfollowFriends();
+        logger.info("Huginn finished for user with twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
     }
 
     private void generateMessage(String username, Map<Integer, List<Change>> uniqueChanges, List<String> messages) {
@@ -126,6 +131,13 @@ public class Huginn extends Thread {
                 lastMessage = lastMessage + message;
                 messages.set(messages.size() - 1, lastMessage);
             }
+        }
+    }
+
+    private void unfollowFriends() {
+        if (!unfollows.isEmpty()) {
+            friendService.unfollowFriends(user, unfollows);
+            logger.info("user with twitter-id: {} db-id: {} unfollowed {} accounts.", user.getTwitterUserId(), user.getId(), unfollows.size());
         }
     }
 

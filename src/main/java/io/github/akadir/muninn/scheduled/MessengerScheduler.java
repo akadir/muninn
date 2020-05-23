@@ -8,6 +8,8 @@ import io.github.akadir.muninn.scheduled.task.Muninn;
 import io.github.akadir.muninn.service.AuthenticatedUserService;
 import io.github.akadir.muninn.service.ChangeSetService;
 import io.github.akadir.muninn.service.FriendService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,14 +25,21 @@ import java.util.Set;
  * Time: 22:16
  */
 @Component
-public class MuninnScheduler extends TaskScheduler {
+public class MessengerScheduler {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final AuthenticatedUserService authenticatedUserService;
+    private final FriendService friendService;
+    private final TelegramBot telegramBot;
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckers;
 
     @Autowired
-    public MuninnScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
-                           ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers) {
-        super(authenticatedUserService, friendService, telegramBot);
+    public MessengerScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
+                              ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers) {
+        this.authenticatedUserService = authenticatedUserService;
+        this.friendService = friendService;
+        this.telegramBot = telegramBot;
         this.changeSetService = changeSetService;
         this.updateCheckers = updateCheckers;
     }
@@ -85,7 +94,7 @@ public class MuninnScheduler extends TaskScheduler {
         List<Huginn> huginns = new ArrayList<>();
 
         for (Muninn m : muninns) {
-            Huginn huginn = new Huginn(m.getUser(), friendService, telegramBot);
+            Huginn huginn = new Huginn(m.getUser(), friendService, telegramBot, m.getUnfollows());
             huginn.start();
             logger.info("Huginn: {} started", huginn.getName());
             huginns.add(huginn);
