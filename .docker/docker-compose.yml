@@ -1,13 +1,13 @@
 version: '3.3'
 services:
   postgres:
-    container_name: muninn_postgres
-    privileged: true
+    container_name: docker_postgres
     environment:
       - POSTGRES_PASSWORD=
       - POSTGRES_USER=
-      - PGDATA=/tmp
     ports:
       - '5432:5432'
+    volumes:
+      - '/root/docker/postgres-data:/var/lib/postgresql/data'
     image: 'postgres:12.2'
     restart: unless-stopped

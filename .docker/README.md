@@ -1,8 +1,5 @@
 # docker-compose config
 
-To be able to run postgresql docker image on my raspberry pi, currently this [docker-compose.yml](./docker-compose.yml) 
-does not have volume definition. `PGDATA=/tmp` was added to solve this problem.  
-
 # docker commands
 
 run `postgresql`:
