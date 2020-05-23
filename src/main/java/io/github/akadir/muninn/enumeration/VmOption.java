@@ -13,7 +13,8 @@ public enum VmOption {
     RECHECK_PERIOD("muninn.recheck.period"),
     DATA_SOURCE_URL("data.source.url"),
     DATA_SOURCE_USERNAME("data.source.username"),
-    DATA_SOURCE_PASSWORD("data.source.password");
+    DATA_SOURCE_PASSWORD("data.source.password"),
+    FOLLOWING_COUNT_LIMIT("following.count.limit");
 
     VmOption(String key) {
         this.key = key;

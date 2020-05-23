@@ -22,16 +22,18 @@ public class ConfigParams {
     public static final String DATA_SOURCE_URL;
     public static final String DATA_SOURCE_USERNAME;
     public static final String DATA_SOURCE_PASSWORD;
+    public static final int FOLLOWING_COUNT_LIMIT;
 
     static {
         TELEGRAM_BOT_NAME = System.getProperty(VmOption.TELEGRAM_BOT_NAME.getKey());
         TELEGRAM_TOKEN = System.getProperty(VmOption.TELEGRAM_TOKEN.getKey());
         TWITTER_CONSUMER_KEY = System.getProperty(VmOption.TWITTER_CONSUMER_KEY.getKey());
         TWITTER_CONSUMER_SECRET = System.getProperty(VmOption.TWITTER_CONSUMER_SECRET.getKey());
-        RECHECK_PERIOD = Integer.parseInt(System.getProperty(VmOption.RECHECK_PERIOD.getKey()));
+        RECHECK_PERIOD = Integer.parseInt(System.getProperty(VmOption.RECHECK_PERIOD.getKey(), "1"));
         DATA_SOURCE_URL = System.getProperty(VmOption.DATA_SOURCE_URL.getKey());
         DATA_SOURCE_USERNAME = System.getProperty(VmOption.DATA_SOURCE_USERNAME.getKey());
         DATA_SOURCE_PASSWORD = System.getProperty(VmOption.DATA_SOURCE_PASSWORD.getKey());
+        FOLLOWING_COUNT_LIMIT = Integer.parseInt(System.getProperty(VmOption.FOLLOWING_COUNT_LIMIT.getKey(), "1000"));
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{}: {}", VmOption.TELEGRAM_BOT_NAME, TELEGRAM_BOT_NAME);
