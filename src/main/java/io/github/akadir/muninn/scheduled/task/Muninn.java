@@ -2,7 +2,7 @@ package io.github.akadir.muninn.scheduled.task;
 
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.bot.TwitterBot;
-import io.github.akadir.muninn.checker.UpdateChecker;
+import io.github.akadir.muninn.checker.update.UpdateChecker;
 import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.enumeration.ThreadAvailability;

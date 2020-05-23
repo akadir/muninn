@@ -1,4 +1,4 @@
-package io.github.akadir.muninn.checker;
+package io.github.akadir.muninn.checker.update;
 
 import io.github.akadir.muninn.model.ChangeSet;
 import io.github.akadir.muninn.model.Friend;

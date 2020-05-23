@@ -1,7 +1,7 @@
 package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
-import io.github.akadir.muninn.checker.UpdateChecker;
+import io.github.akadir.muninn.checker.update.UpdateChecker;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
