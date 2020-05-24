@@ -11,9 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author akadir
@@ -56,21 +57,8 @@ public class FriendService {
             return;
         }
 
-        List<Friend> alreadySavedFriends = friendRepository.findAllByTwitterUserIdIn(friends.stream()
-                .map(Friend::getTwitterUserId).collect(Collectors.toList()));
-        if (!alreadySavedFriends.isEmpty()) {
-            Map<Long, Friend> idFriendMap = alreadySavedFriends.stream().collect(Collectors.toMap(Friend::getTwitterUserId, Function.identity()));
-
-            for (Friend f : friends) {
-                if (idFriendMap.containsKey(f.getTwitterUserId())) {
-                    Friend saved = idFriendMap.get(f.getTwitterUserId());
-                    f.setId(saved.getId());
-                    f.setVersion(saved.getVersion());
-                }
-            }
-        }
-
         friends = friendRepository.saveAll(friends);
+
         logger.info("{} friends saved or updated for user with id: {}", friends.size(), user.getId());
     }
 
