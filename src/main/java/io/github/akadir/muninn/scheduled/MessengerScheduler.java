@@ -49,7 +49,7 @@ public class MessengerScheduler {
     }
 
     @Transactional
-    @Scheduled(fixedDelay = 60_000 * 60 * 3, initialDelay = 1000 * 10)
+    @Scheduled(fixedDelay = 60_000 * 60, initialDelay = 1000 * 10)
     public void checkFriends() throws InterruptedException {
         long start = System.currentTimeMillis();
         logger.info("Scheduled task started");
