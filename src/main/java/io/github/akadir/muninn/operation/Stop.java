@@ -28,13 +28,11 @@ public class Stop implements Operation {
 
     private final AuthenticatedUserService authenticatedUserService;
     private final MessageSource messageSource;
-    private final TelegramBot telegramBot;
 
     @Autowired
-    public Stop(AuthenticatedUserService authenticatedUserService, MessageSource messageSource, TelegramBot telegramBot) {
+    public Stop(AuthenticatedUserService authenticatedUserService, MessageSource messageSource) {
         this.authenticatedUserService = authenticatedUserService;
         this.messageSource = messageSource;
-        this.telegramBot = telegramBot;
     }
 
     @Override
@@ -43,7 +41,7 @@ public class Stop implements Operation {
     }
 
     @Override
-    public void handle(Update update) {
+    public void handle(Update update, TelegramBot telegramBot) {
         String messageContent = null;
         try {
             Integer userId = update.getMessage().getFrom().getId();

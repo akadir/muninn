@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.checker.validity;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import twitter4j.User;
 
@@ -9,5 +10,5 @@ import twitter4j.User;
  * Time: 01:02
  */
 public interface AccountValidator {
-    boolean validate(AuthenticatedUser user, User twitterUser);
+    boolean validate(AuthenticatedUser user, User twitterUser, TelegramBot telegramBot);
 }

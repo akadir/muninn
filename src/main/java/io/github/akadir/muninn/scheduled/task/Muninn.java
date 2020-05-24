@@ -104,7 +104,7 @@ public class Muninn extends Thread {
     private boolean validateUser(User twitterUser) {
         logger.info("Validating twitter user: {}", twitterUser.getScreenName());
         for (AccountValidator validator : accountValidators) {
-            if (!validator.validate(user, twitterUser)) {
+            if (!validator.validate(user, twitterUser, telegramBot)) {
                 return false;
             }
         }

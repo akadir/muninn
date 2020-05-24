@@ -26,17 +26,15 @@ public class FollowingCountValidation implements AccountValidator {
 
     private final AuthenticatedUserService authenticatedUserService;
     private final MessageSource messageSource;
-    private final TelegramBot telegramBot;
 
     @Autowired
-    public FollowingCountValidation(AuthenticatedUserService authenticatedUserService, MessageSource messageSource, TelegramBot telegramBot) {
+    public FollowingCountValidation(AuthenticatedUserService authenticatedUserService, MessageSource messageSource) {
         this.authenticatedUserService = authenticatedUserService;
         this.messageSource = messageSource;
-        this.telegramBot = telegramBot;
     }
 
     @Override
-    public boolean validate(AuthenticatedUser user, User twitterUser) {
+    public boolean validate(AuthenticatedUser user, User twitterUser, TelegramBot telegramBot) {
         if (twitterUser.getFriendsCount() > ConfigParams.FOLLOWING_COUNT_LIMIT) {
             String message = messageSource.getMessage(MuninnMessage.FOLLOWING_LIMIT_REACHED.name(),
                     new Object[]{twitterUser.getFriendsCount(), ConfigParams.FOLLOWING_COUNT_LIMIT},

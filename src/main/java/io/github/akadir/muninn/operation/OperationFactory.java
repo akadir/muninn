@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
  * Date: 2.05.2020
  * Time: 23:40
  */
+@Lazy
 @Component
 public class OperationFactory {
     private final Logger logger = LoggerFactory.getLogger(OperationFactory.class);

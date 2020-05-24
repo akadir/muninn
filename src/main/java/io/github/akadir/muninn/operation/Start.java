@@ -38,15 +38,12 @@ public class Start implements Operation {
 
     private final MessageSource messageSource;
     private final AuthenticatedUserService authenticatedUserService;
-    private final TelegramBot telegramBot;
     private final List<AccountValidator> accountValidators;
 
     @Autowired
-    public Start(MessageSource messageSource, AuthenticatedUserService authenticatedUserService, TelegramBot telegramBot,
-                 List<AccountValidator> accountValidators) {
+    public Start(MessageSource messageSource, AuthenticatedUserService authenticatedUserService, List<AccountValidator> accountValidators) {
         this.messageSource = messageSource;
         this.authenticatedUserService = authenticatedUserService;
-        this.telegramBot = telegramBot;
         this.accountValidators = accountValidators;
     }
 
@@ -56,7 +53,7 @@ public class Start implements Operation {
     }
 
     @Override
-    public void handle(Update update) {
+    public void handle(Update update, TelegramBot telegramBot) {
         String messageContent;
         SendMessage message;
         String command = update.getMessage().getText();
@@ -81,7 +78,7 @@ public class Start implements Operation {
 
                 if (notNullAndNotEmpty(beingAuthenticated.getTwitterRequestToken())
                         && notNullAndNotEmpty(beingAuthenticated.getTwitterRequestTokenSecret())) {
-                    messageContent = getAccessTokens(twitter, command, beingAuthenticated);
+                    messageContent = getAccessTokens(twitter, command, beingAuthenticated, telegramBot);
                 } else {
                     authenticatedUserService.deleteUser(beingAuthenticated);
                     messageContent = messageSource.getMessage(MuninnMessage.ERROR.name(),
@@ -134,7 +131,7 @@ public class Start implements Operation {
         return message;
     }
 
-    private String getAccessTokens(Twitter twitter, String pin, AuthenticatedUser authenticatedUser) {
+    private String getAccessTokens(Twitter twitter, String pin, AuthenticatedUser authenticatedUser, TelegramBot telegramBot) {
         String message = "";
         try {
             RequestToken requestToken = new RequestToken(authenticatedUser.getTwitterRequestToken(),
@@ -151,7 +148,7 @@ public class Start implements Operation {
             authenticatedUser.setTwitterTokenSecret(authAccessToken.getTokenSecret());
             authenticatedUser.setLastNotifiedTime(new Date());
 
-            if (validate(authenticatedUser, auth)) {
+            if (validate(authenticatedUser, auth, telegramBot)) {
                 authenticatedUser.setBotStatus(TelegramBotStatus.ACTIVE.getCode());
                 message = messageSource.getMessage(MuninnMessage.BOT_ACTIVATED.name(), new Object[]{auth.getFriendsCount()},
                         Locale.getDefault());
@@ -174,11 +171,11 @@ public class Start implements Operation {
         return message;
     }
 
-    private boolean validate(AuthenticatedUser user, User twitterUser) {
+    private boolean validate(AuthenticatedUser user, User twitterUser, TelegramBot telegramBot) {
         logger.info("Validate account: {}", twitterUser.getScreenName());
 
         for (AccountValidator validator : accountValidators) {
-            if (!validator.validate(user, twitterUser)) {
+            if (!validator.validate(user, twitterUser, telegramBot)) {
                 return false;
             }
         }

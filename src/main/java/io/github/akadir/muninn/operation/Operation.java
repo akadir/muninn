@@ -1,7 +1,7 @@
 package io.github.akadir.muninn.operation;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.enumeration.TelegramOption;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 /**
@@ -12,5 +12,5 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public interface Operation {
     TelegramOption getOption();
 
-    void handle(Update update);
+    void handle(Update update, TelegramBot telegramBot);
 }

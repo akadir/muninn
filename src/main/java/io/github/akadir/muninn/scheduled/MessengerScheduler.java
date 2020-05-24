@@ -3,6 +3,7 @@ package io.github.akadir.muninn.scheduled;
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.checker.update.UpdateChecker;
 import io.github.akadir.muninn.checker.validity.AccountValidator;
+import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -63,8 +64,10 @@ public class MessengerScheduler {
             userList = runHuginn(muninns);
 
             for (AuthenticatedUser user : userList) {
-                authenticatedUserService.updateUser(user);
-                logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
+                if (TelegramBotStatus.ACTIVE.getCode() == user.getTwitterUserId()) {
+                    authenticatedUserService.updateUser(user);
+                    logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
+                }
             }
         } else {
             logger.info("No user found.");

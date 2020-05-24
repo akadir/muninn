@@ -22,12 +22,10 @@ public class Help implements Operation {
     private final Logger logger = LoggerFactory.getLogger(Help.class);
 
     private final MessageSource messageSource;
-    private final TelegramBot telegramBot;
 
     @Autowired
-    public Help(MessageSource messageSource, TelegramBot telegramBot) {
+    public Help(MessageSource messageSource) {
         this.messageSource = messageSource;
-        this.telegramBot = telegramBot;
     }
 
     @Override
@@ -36,7 +34,7 @@ public class Help implements Operation {
     }
 
     @Override
-    public void handle(Update update) {
+    public void handle(Update update, TelegramBot telegramBot) {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (TelegramOption option : TelegramOption.values()) {
