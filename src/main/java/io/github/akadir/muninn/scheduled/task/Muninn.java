@@ -220,6 +220,8 @@ public class Muninn extends Thread {
             }
         }
 
+        logger.info("New followings checked for user with twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
+
         return changeSets;
     }
 
