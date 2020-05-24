@@ -3,6 +3,7 @@ package io.github.akadir.muninn.scheduled.task;
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.bot.TwitterBot;
 import io.github.akadir.muninn.checker.update.UpdateChecker;
+import io.github.akadir.muninn.checker.validity.AccountValidator;
 import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.enumeration.ThreadAvailability;
@@ -41,15 +42,17 @@ public class Muninn extends Thread {
     private final FriendService friendService;
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckerSet;
+    private final List<AccountValidator> accountValidators;
     private final TelegramBot telegramBot;
     private final List<Long> unfollows;
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
-                  Set<UpdateChecker> updateCheckerSet, TelegramBot telegramBot) {
+                  Set<UpdateChecker> updateCheckerSet, List<AccountValidator> accountValidators, TelegramBot telegramBot) {
         this.user = user;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
         this.updateCheckerSet = updateCheckerSet;
+        this.accountValidators = accountValidators;
         this.telegramBot = telegramBot;
         this.unfollows = new ArrayList<>();
     }
@@ -60,12 +63,18 @@ public class Muninn extends Thread {
         try {
             super.setName("muninn for: " + user.getTwitterUserId());
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
-            logger.info("Start checking friend updates for user: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
-            friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
+            User twitterUser = TwitterBot.showUser(twitter, user, user.getTwitterUserId());
 
-            checkUserFriends(twitter, friendsToCheck);
+            if (validateUser(twitterUser)) {
+                logger.info("Start checking friend updates for user: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
+                friendsToCheck = friendService.findUserFriendsToCheck(user.getId());
 
-            logger.info("Finish checking friend updates for user: {}", user.getTwitterUserId());
+                checkUserFriends(twitter, friendsToCheck);
+
+                logger.info("Finish checking friend updates for user: {}", user.getTwitterUserId());
+            } else {
+                logger.info("User could not pass validation: {}", twitterUser.getScreenName());
+            }
         } catch (AccountSuspendedException | TokenExpiredException e) {
             logger.error("User token expired: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
 
@@ -90,6 +99,17 @@ public class Muninn extends Thread {
                 friendsToCheck.forEach(f -> f.setThreadAvailability(ThreadAvailability.NOT_AVAILABLE.getCode()));
             }
         }
+    }
+
+    private boolean validateUser(User twitterUser) {
+        logger.info("Validating twitter user: {}", twitterUser.getScreenName());
+        for (AccountValidator validator : accountValidators) {
+            if (!validator.validate(user, twitterUser)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void checkUserFriends(Twitter twitter, List<Friend> friendsToCheck) {

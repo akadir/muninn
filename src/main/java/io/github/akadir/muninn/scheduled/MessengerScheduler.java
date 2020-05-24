@@ -2,6 +2,7 @@ package io.github.akadir.muninn.scheduled;
 
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.checker.update.UpdateChecker;
+import io.github.akadir.muninn.checker.validity.AccountValidator;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -33,15 +34,18 @@ public class MessengerScheduler {
     private final TelegramBot telegramBot;
     private final ChangeSetService changeSetService;
     private final Set<UpdateChecker> updateCheckers;
+    private final List<AccountValidator> validators;
 
     @Autowired
     public MessengerScheduler(AuthenticatedUserService authenticatedUserService, FriendService friendService,
-                              ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers) {
+                              ChangeSetService changeSetService, TelegramBot telegramBot, Set<UpdateChecker> updateCheckers,
+                              List<AccountValidator> validators) {
         this.authenticatedUserService = authenticatedUserService;
         this.friendService = friendService;
         this.telegramBot = telegramBot;
         this.changeSetService = changeSetService;
         this.updateCheckers = updateCheckers;
+        this.validators = validators;
     }
 
     @Transactional
@@ -75,7 +79,7 @@ public class MessengerScheduler {
         List<Muninn> muninns = new ArrayList<>();
 
         for (AuthenticatedUser user : users) {
-            Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers, telegramBot);
+            Muninn muninn = new Muninn(user, friendService, changeSetService, updateCheckers, validators, telegramBot);
             muninn.start();
             logger.info("Muninn: {} started", muninn.getName());
             muninns.add(muninn);

@@ -65,7 +65,7 @@ public class TwitterBot {
 
         try {
             user = twitter.showUser(userId);
-            RateLimitHandler.handle(authUser.getId(), user.getRateLimitStatus(), ApiProcessType.SHOW_USER);
+            RateLimitHandler.handle(authUser.getTwitterUserId(), user.getRateLimitStatus(), ApiProcessType.SHOW_USER);
         } catch (TwitterException e) {
             LOGGER.error("Error while fetching user details with id: {}: ", userId, e);
             checkException(authUser.getId(), e, ApiProcessType.GET_FRIENDS_IDS);
