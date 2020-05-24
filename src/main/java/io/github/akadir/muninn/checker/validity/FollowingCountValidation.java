@@ -40,7 +40,7 @@ public class FollowingCountValidation implements AccountValidator {
                     new Object[]{twitterUser.getFriendsCount(), ConfigParams.FOLLOWING_COUNT_LIMIT},
                     Locale.getDefault());
 
-            authenticatedUserService.setUserNotActive(user);
+            user = authenticatedUserService.setUserNotActive(user);
 
             SendMessage telegramMessage = new SendMessage()
                     .setChatId(user.getTelegramChatId())
