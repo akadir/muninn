@@ -62,8 +62,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         if (update.hasMessage()) {
             Operation operation = operationFactory.getOperation(update.getMessage().getText());
-            SendMessage message = operation.generateMessage(update);
-            sendMessage(message);
+            operation.handle(update);
         }
     }
 

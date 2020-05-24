@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.operation;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.enumeration.MuninnMessage;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.enumeration.TelegramOption;
@@ -24,13 +25,16 @@ import java.util.Optional;
 @Component("stop")
 public class Stop implements Operation {
     private final Logger logger = LoggerFactory.getLogger(Stop.class);
+
     private final AuthenticatedUserService authenticatedUserService;
     private final MessageSource messageSource;
+    private final TelegramBot telegramBot;
 
     @Autowired
-    public Stop(AuthenticatedUserService authenticatedUserService, MessageSource messageSource) {
+    public Stop(AuthenticatedUserService authenticatedUserService, MessageSource messageSource, TelegramBot telegramBot) {
         this.authenticatedUserService = authenticatedUserService;
         this.messageSource = messageSource;
+        this.telegramBot = telegramBot;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class Stop implements Operation {
     }
 
     @Override
-    public SendMessage generateMessage(Update update) {
+    public void handle(Update update) {
         String messageContent = null;
         try {
             Integer userId = update.getMessage().getFrom().getId();
@@ -66,10 +70,14 @@ public class Stop implements Operation {
                     new Object[]{TelegramOption.HELP.getOption()}, Locale.getDefault());
         }
 
-        return new SendMessage()
+        SendMessage message = new SendMessage()
                 .setChatId(update.getMessage().getChatId())
                 .disableWebPagePreview()
                 .enableHtml(true)
                 .setText(messageContent);
+
+        logger.info("Message for update: {} generated as follows: {} ", update.getUpdateId(), messageContent);
+
+        telegramBot.notify(message);
     }
 }

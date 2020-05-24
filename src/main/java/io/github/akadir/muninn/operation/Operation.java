@@ -12,5 +12,5 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public interface Operation {
     TelegramOption getOption();
 
-    SendMessage generateMessage(Update update);
+    void handle(Update update);
 }

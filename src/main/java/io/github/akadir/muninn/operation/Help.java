@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.operation;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.enumeration.TelegramOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +22,12 @@ public class Help implements Operation {
     private final Logger logger = LoggerFactory.getLogger(Help.class);
 
     private final MessageSource messageSource;
+    private final TelegramBot telegramBot;
 
     @Autowired
-    public Help(MessageSource messageSource) {
+    public Help(MessageSource messageSource, TelegramBot telegramBot) {
         this.messageSource = messageSource;
+        this.telegramBot = telegramBot;
     }
 
     @Override
@@ -33,7 +36,7 @@ public class Help implements Operation {
     }
 
     @Override
-    public SendMessage generateMessage(Update update) {
+    public void handle(Update update) {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (TelegramOption option : TelegramOption.values()) {
@@ -48,6 +51,6 @@ public class Help implements Operation {
 
         logger.info("Message for update: {} generated as follows: {} ", update.getUpdateId(), message);
 
-        return message;
+        telegramBot.notify(message);
     }
 }

@@ -1,6 +1,8 @@
 package io.github.akadir.muninn.operation;
 
+import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.bot.TwitterBot;
+import io.github.akadir.muninn.checker.validity.AccountValidator;
 import io.github.akadir.muninn.enumeration.MuninnMessage;
 import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.enumeration.TelegramOption;
@@ -21,6 +23,7 @@ import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -35,11 +38,16 @@ public class Start implements Operation {
 
     private final MessageSource messageSource;
     private final AuthenticatedUserService authenticatedUserService;
+    private final TelegramBot telegramBot;
+    private final List<AccountValidator> accountValidators;
 
     @Autowired
-    public Start(MessageSource messageSource, AuthenticatedUserService authenticatedUserService) {
+    public Start(MessageSource messageSource, AuthenticatedUserService authenticatedUserService, TelegramBot telegramBot,
+                 List<AccountValidator> accountValidators) {
         this.messageSource = messageSource;
         this.authenticatedUserService = authenticatedUserService;
+        this.telegramBot = telegramBot;
+        this.accountValidators = accountValidators;
     }
 
     @Override
@@ -48,7 +56,7 @@ public class Start implements Operation {
     }
 
     @Override
-    public SendMessage generateMessage(Update update) {
+    public void handle(Update update) {
         String messageContent;
         SendMessage message;
         String command = update.getMessage().getText();
@@ -84,15 +92,19 @@ public class Start implements Operation {
             }
         }
 
-        message = new SendMessage()
-                .setChatId(update.getMessage().getChatId())
-                .enableHtml(true)
-                .disableWebPagePreview()
-                .setText(messageContent);
+        if (!"".equals(messageContent.trim())) {
+            message = new SendMessage()
+                    .setChatId(update.getMessage().getChatId())
+                    .enableHtml(true)
+                    .disableWebPagePreview()
+                    .setText(messageContent);
 
-        logger.info("Message for command: {} generated as follows: {} ", command, message.getText());
+            logger.info("Message for command: {} generated as follows: {} ", command, message.getText());
 
-        return message;
+            telegramBot.notify(message);
+        } else {
+            logger.warn("Generated message is empty: {}", messageContent);
+        }
     }
 
     private String authenticate(Twitter twitter, Update update, AuthenticatedUser authenticatedUser) {
@@ -123,7 +135,7 @@ public class Start implements Operation {
     }
 
     private String getAccessTokens(Twitter twitter, String pin, AuthenticatedUser authenticatedUser) {
-        String message;
+        String message = "";
         try {
             RequestToken requestToken = new RequestToken(authenticatedUser.getTwitterRequestToken(),
                     authenticatedUser.getTwitterRequestTokenSecret());
@@ -134,17 +146,20 @@ public class Start implements Operation {
             User auth = twitter.showUser(twitter.verifyCredentials().getId());
             logger.info("User authenticated: {}", auth);
 
-            authenticatedUser.setBotStatus(TelegramBotStatus.ACTIVE.getCode());
             authenticatedUser.setTwitterUserId(auth.getId());
             authenticatedUser.setTwitterToken(authAccessToken.getToken());
             authenticatedUser.setTwitterTokenSecret(authAccessToken.getTokenSecret());
             authenticatedUser.setLastNotifiedTime(new Date());
 
-            authenticatedUser = authenticatedUserService.saveAuthenticatedUser(authenticatedUser);
-            logger.info("AuthenticatedUser updated: {}", authenticatedUser);
-
-            message = messageSource.getMessage(MuninnMessage.BOT_ACTIVATED.name(), new Object[]{auth.getFriendsCount()},
-                    Locale.getDefault());
+            if (validate(authenticatedUser, auth)) {
+                authenticatedUser.setBotStatus(TelegramBotStatus.ACTIVE.getCode());
+                message = messageSource.getMessage(MuninnMessage.BOT_ACTIVATED.name(), new Object[]{auth.getFriendsCount()},
+                        Locale.getDefault());
+                authenticatedUser = authenticatedUserService.saveAuthenticatedUser(authenticatedUser);
+                logger.info("AuthenticatedUser updated: {}", authenticatedUser);
+            } else {
+                logger.error("User could not be validated: {}", auth.getScreenName());
+            }
         } catch (TwitterException e) {
             logger.error("Error occurred: ", e);
             if (e.getStatusCode() == 401) {
@@ -157,6 +172,18 @@ public class Start implements Operation {
         }
 
         return message;
+    }
+
+    private boolean validate(AuthenticatedUser user, User twitterUser) {
+        logger.info("Validate account: {}", twitterUser.getScreenName());
+
+        for (AccountValidator validator : accountValidators) {
+            if (!validator.validate(user, twitterUser)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean notNullAndNotEmpty(String text) {
