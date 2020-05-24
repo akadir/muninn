@@ -48,6 +48,7 @@ public class Muninn extends Thread {
 
     public Muninn(AuthenticatedUser user, FriendService friendService, ChangeSetService changeSetService,
                   Set<UpdateChecker> updateCheckerSet, List<AccountValidator> accountValidators, TelegramBot telegramBot) {
+        super.setName("muninn for: " + user.getTwitterUserId());
         this.user = user;
         this.friendService = friendService;
         this.changeSetService = changeSetService;
@@ -61,7 +62,6 @@ public class Muninn extends Thread {
     public void run() {
         List<Friend> friendsToCheck = null;
         try {
-            super.setName("muninn for: " + user.getTwitterUserId());
             Twitter twitter = TwitterBot.getTwitter(user.getTwitterToken(), user.getTwitterTokenSecret());
             User twitterUser = TwitterBot.showUser(twitter, user, user.getTwitterUserId());
 

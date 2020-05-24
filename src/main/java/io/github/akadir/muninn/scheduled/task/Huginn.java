@@ -33,16 +33,15 @@ public class Huginn extends Thread {
         this.friendService = friendService;
         this.telegramBot = telegramBot;
         this.unfollows = unfollows;
+        super.setName("huginn for: " + user.getTwitterUserId());
     }
 
     @Override
     public void run() {
-        super.run();
         notifyUser();
     }
 
     private void notifyUser() {
-        super.setName("huginn for: " + user.getTwitterUserId());
         List<FriendChangeSet> changeSetList = friendService
                 .fetchAllChangeSetForUserSinceLastNotifiedTime(user.getId(), user.getLastNotifiedTime());
 
