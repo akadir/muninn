@@ -67,6 +67,8 @@ public class MessengerScheduler {
                 authenticatedUserService.updateUser(user);
                 logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
             }
+
+            userList = authenticatedUserService.getUsersToCheck();
         }
 
         long executionTime = System.currentTimeMillis() - start;
