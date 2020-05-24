@@ -3,7 +3,6 @@ package io.github.akadir.muninn.scheduled;
 import io.github.akadir.muninn.TelegramBot;
 import io.github.akadir.muninn.checker.update.UpdateChecker;
 import io.github.akadir.muninn.checker.validity.AccountValidator;
-import io.github.akadir.muninn.enumeration.TelegramBotStatus;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.scheduled.task.Huginn;
 import io.github.akadir.muninn.scheduled.task.Muninn;
@@ -54,9 +53,10 @@ public class MessengerScheduler {
     public void checkFriends() throws InterruptedException {
         long start = System.currentTimeMillis();
         logger.info("Scheduled task started");
-        List<AuthenticatedUser> userList = authenticatedUserService.getActiveUsers();
 
-        if (!userList.isEmpty()) {
+        List<AuthenticatedUser> userList = authenticatedUserService.getUsersToCheck();
+
+        while (!userList.isEmpty()) {
             logger.info("Found {} users to check", userList.size());
 
             List<Muninn> muninns = runMuninn(userList);
@@ -64,13 +64,9 @@ public class MessengerScheduler {
             userList = runHuginn(muninns);
 
             for (AuthenticatedUser user : userList) {
-                if (TelegramBotStatus.ACTIVE.getCode() == user.getTwitterUserId()) {
-                    authenticatedUserService.updateUser(user);
-                    logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
-                }
+                authenticatedUserService.updateUser(user);
+                logger.info("User updated: twitter-id: {} db-id: {}", user.getTwitterUserId(), user.getId());
             }
-        } else {
-            logger.info("No user found.");
         }
 
         long executionTime = System.currentTimeMillis() - start;

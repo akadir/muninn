@@ -51,7 +51,7 @@ public class AuthenticatedUserService {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, -ConfigParams.RECHECK_PERIOD);
         Date recheckedPeriodHoursBefore = calendar.getTime();
-        return authenticatedUserRepository.findUsersToCheckFriends(TelegramBotStatus.ACTIVE.getCode(), recheckedPeriodHoursBefore);
+        return authenticatedUserRepository.findTop20ByBotStatusAndLastCheckedTimeLessThanEqual(TelegramBotStatus.ACTIVE.getCode(), recheckedPeriodHoursBefore);
     }
 
     public List<AuthenticatedUser> getActiveUsers() {
