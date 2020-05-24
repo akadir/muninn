@@ -1,5 +1,6 @@
 package io.github.akadir.muninn.service;
 
+import io.github.akadir.muninn.config.ConfigParams;
 import io.github.akadir.muninn.model.AuthenticatedUser;
 import io.github.akadir.muninn.model.Friend;
 import io.github.akadir.muninn.model.UserFriend;
@@ -43,7 +44,7 @@ public class FriendService {
     public List<Friend> findUserFriendsToCheck(Long userId) {
         UUID uuid = UUID.randomUUID();
 
-        friendRepository.signFriendsToAvailableForFetch(userId, uuid.toString());
+        friendRepository.signFriendsToAvailableForFetch(userId, uuid.toString(), ConfigParams.RECHECK_PERIOD);
         logger.info("User: {} friends signed with id: {}", userId, uuid);
 
         List<Friend> friendsToCheck = friendRepository.findUserFriendsToCheck(uuid.toString());
