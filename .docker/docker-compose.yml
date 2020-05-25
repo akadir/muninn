@@ -9,5 +9,7 @@ services:
       - '5432:5432'
     volumes:
       - '/root/docker/postgres-data:/var/lib/postgresql/data'
+      - '/etc/timezone:/etc/timezone:ro'
+      - '/etc/localtime:/etc/localtime:ro'
     image: 'postgres:12.2'
     restart: unless-stopped
