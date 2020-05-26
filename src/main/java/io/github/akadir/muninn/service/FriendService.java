@@ -12,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author akadir
@@ -44,7 +41,11 @@ public class FriendService {
     public List<Friend> findUserFriendsToCheck(Long userId) {
         UUID uuid = UUID.randomUUID();
 
-        friendRepository.signFriendsToAvailableForFetch(userId, uuid.toString(), ConfigParams.RECHECK_PERIOD);
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -ConfigParams.RECHECK_PERIOD);
+        Date recheckedPeriodHoursBefore = calendar.getTime();
+
+        friendRepository.signFriendsToAvailableForFetch(userId, uuid.toString(), recheckedPeriodHoursBefore);
         logger.info("User: {} friends signed with id: {}", userId, uuid);
 
         List<Friend> friendsToCheck = friendRepository.findUserFriendsToCheck(uuid.toString());

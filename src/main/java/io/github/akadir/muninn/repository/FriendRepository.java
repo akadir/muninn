@@ -26,10 +26,10 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     @Transactional
     @Query(value = "update friend f set thread_availability = 1, thread_id = ?2, check_start_time = now()" +
             "from user_friend as uf " +
-            "where f.id = uf.friend_id and uf.follower_id = ?1 and f.last_checked < current_timestamp - interval '?3 hours' and " +
+            "where f.id = uf.friend_id and uf.follower_id = ?1 and f.last_checked < ?3 and " +
             "(f.thread_availability is null or f.thread_availability = 0 " +
             "or (f.thread_availability = 1 and f.check_start_time < current_timestamp - interval '5 hours'))", nativeQuery = true)
-    void signFriendsToAvailableForFetch(Long userId, String threadId, int reCheckPeriod);
+    void signFriendsToAvailableForFetch(Long userId, String threadId, Date date);
 
     @Query(value = "select * from friend where thread_id = ?1", nativeQuery = true)
     List<Friend> findUserFriendsToCheck(String threadId);
