@@ -136,6 +136,7 @@
     </dependencies>
 
     <build>
+        <finalName>muninn</finalName>
         <plugins>
             <plugin>
                 <!-- Build an executable JAR -->
