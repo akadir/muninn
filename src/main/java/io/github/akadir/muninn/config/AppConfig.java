@@ -113,8 +113,9 @@ public class AppConfig {
         properties.put("hibernate.c3p0.max_size", "10");
         properties.put("hibernate.c3p0.max_statements", "50");
         properties.put("hibernate.c3p0.timeout", "0");
-        properties.put("hibernate.c3p0.acquireRetryAttempts", "1");
-        properties.put("hibernate.c3p0.acquireRetryDelay", "250");
+        properties.put("hibernate.c3p0.acquireRetryAttempts", "0");
+        properties.put("hibernate.c3p0.acquireRetryDelay", "3000");
+        properties.put("hibernate.c3p0.breakAfterAcquireFailure", "false");
 
         return properties;
     }
