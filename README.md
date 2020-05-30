@@ -31,13 +31,16 @@
 
 ## Usage
 
-You can run Muninn as jar file or docker container. In both options, you will need the access tokens for both telegram and twitter bots.
+You can run Muninn as jar file or docker container. In both options, you will need the access tokens for both telegram 
+and twitter bots.
 
 You can create `telegram bot` using [bot father](https://telegram.me/botfather).
-You will get an `access token` after you created the bot. This token will be used by `Muninn` to send `notifications.
+You will get an `access token` after you created the bot. This token will be used by `Muninn` to send `notifications`.
 
-Another requirement is `Twitter tokens`. You can get your `tokens` from [twitter developers website](https://developer.twitter.com/). 
-`Read permissions` would be ok for your `Twitter App` as `Muninn will not need any write operations regarding the authenticated twitter account. 
+Another requirement is `Twitter tokens`. You can get your `tokens` from 
+[twitter developers website](https://developer.twitter.com/). 
+`Read permissions` would be ok for your `Twitter App` as `Muninn will not need any write operations regarding 
+the authenticated twitter account. 
 
 ### Variable definitions
 
@@ -45,7 +48,8 @@ Another requirement is `Twitter tokens`. You can get your `tokens` from [twitter
 - __TWITTER_CONSUMER_SECRET:__ Token you can get by creating twitter app
 - __TELEGRAM_TOKEN:__ Token of your telegram bot
 - __TELEGRAM_BOT_NAME:__ Name of your telegram bot
-- __MUNINN_RECHECK_PERIOD_IN_HOURS:__ Delay between checks of changes in hours. 6 means Muninn will check your followings once for every 6 hours.
+- __MUNINN_RECHECK_PERIOD_IN_HOURS:__ Delay between checks of changes in hours. 6 means Muninn will check your 
+followings once for every 6 hours.
 - __DATA_SOURCE_URL:__ Url of your postgres database
 - __DATA_SOURCE_USERNAME:__ postgres username
 - __DATA_SOURCE_PASSWORD:__ postgres password
@@ -75,7 +79,8 @@ Another requirement is `Twitter tokens`. You can get your `tokens` from [twitter
 
 ### Starting Bot for Your Account
 
-After you make your Muninn up and running, you can start using your Muninn by opening your telegram app and sending your bot to a `\login` command. 
+After you make your Muninn up and running, you can start using your Muninn by opening your telegram app and sending 
+your bot to a `\login` command. 
 
 It will generate a link to authenticate your twitter account and send back to you. 
 
