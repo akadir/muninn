@@ -1,8 +1,6 @@
 FROM openjdk:8-jre-alpine3.9
 
-LABEL author="akarakoc"
-LABEL repository="https://github.com/akadir/muninn"
-LABEL maintainer="https://github.com/akadir"
+LABEL repository="https://github.com/akadir/muninn" maintainer="https://github.com/akadir"
 
 WORKDIR /muninn
 
@@ -17,6 +15,7 @@ ENV TWITTER_CONSUMER_KEY=""  \
     MUNINN_RECHECK_PERIOD_IN_HOURS=6 \
     DATA_SOURCE_URL=""  \
     DATA_SOURCE_USERNAME=""  \
-    DATA_SOURCE_PASSWORD=""
+    DATA_SOURCE_PASSWORD="" \
+    USER_TIMEZONE=UTC
 
 ENTRYPOINT ["sh", "/muninn/entrypoint.sh"]
