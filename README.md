@@ -53,7 +53,7 @@ followings once for every 6 hours.
 - __DATA_SOURCE_URL:__ Url of your postgres database
 - __DATA_SOURCE_USERNAME:__ postgres username
 - __DATA_SOURCE_PASSWORD:__ postgres password
-
+- __USER_TIMEZONE:__ default:UTC Timezone for Muninn
 ### 1. Run Application as jar file
 
 - Initialise postgresql database using [init-database.sh](.docker/init-database.sh) or [create-tables.sql](.db/create-tables.sql).
