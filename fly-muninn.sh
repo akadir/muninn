@@ -9,9 +9,8 @@ DATA_SOURCE_URL=""
 DATA_SOURCE_USERNAME=""
 DATA_SOURCE_PASSWORD=""
 
-
 PROGRAM_TYPE="muninnTelegramBot"
-DEPENDENCIES="muninn-1.0.jar:lib/*"
+DEPENDENCIES="target/muninn-1.0.jar:target/lib/*"
 MAIN_CLASS="io.github.akadir.muninn.TelegramBot"
 PID=`ps aux | grep -v grep | grep $PROGRAM_TYPE | awk '{print $2}'`
 
