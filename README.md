@@ -48,7 +48,7 @@ Another requirement is `Twitter tokens`. You can get your `tokens` from [twitter
 - __MUNINN_RECHECK_PERIOD_IN_HOURS:__ Delay between checks of changes in hours. 6 means Muninn will check your followings once for every 6 hours.
 - __DATA_SOURCE_URL:__ Url of your postgres database
 - __DATA_SOURCE_USERNAME:__ postgres username
-- __DATA_SOURCE_PASSWORD:__g postgres password
+- __DATA_SOURCE_PASSWORD:__ postgres password
 
 ### 1. Run Application as jar file
 
