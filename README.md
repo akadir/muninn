@@ -39,7 +39,7 @@ You will get an `access token` after you created the bot. This token will be use
 
 Another requirement is `Twitter tokens`. You can get your `tokens` from 
 [twitter developers website](https://developer.twitter.com/). 
-`Read permissions` would be ok for your `Twitter App` as `Muninn will not need any write operations regarding 
+`Read permissions` would be ok for your `Twitter App` as `Muninn` will not need any write operations regarding 
 the authenticated twitter account. 
 
 ### Variable definitions
