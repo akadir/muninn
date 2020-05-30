@@ -33,30 +33,47 @@
 
 You can run Muninn as jar file or docker container. In both options, you will need the access tokens for both telegram and twitter bots.
 
-You can create telegram bot using [bot father](https://telegram.me/botfather).
-You will get an `access token` after you created the bot. This token will be used by Muninn to send notifications.
+You can create `telegram bot` using [bot father](https://telegram.me/botfather).
+You will get an `access token` after you created the bot. This token will be used by `Muninn` to send `notifications.
 
-Another requirement is twitter tokens. You can get your tokens from [twitter developers website](https://developer.twitter.com/). 
-Read permissions would be ok for your twitter bot as Muninn will not need any write operations regarding the authenticated twitter account. 
+Another requirement is `Twitter tokens`. You can get your `tokens` from [twitter developers website](https://developer.twitter.com/). 
+`Read permissions` would be ok for your `Twitter App` as `Muninn will not need any write operations regarding the authenticated twitter account. 
 
-### Environment variable definitions
+### Variable definitions
 
-![env-variables](img/env-variables.png)
+```
+# Token that you can get by creating twitter app
+TWITTER_CONSUMER_KEY=
+# Token that you can get by creating twitter app
+TWITTER_CONSUMER_SECRET=
+# Token of your telegram bot
+TELEGRAM_TOKEN=
+# Name of your telegram bot
+TELEGRAM_BOT_NAME=
+# Delay between checks of changes in hours. 
+# 6 means Muninn will check your followings once for every 6 hours.
+MUNINN_RECHECK_PERIOD_IN_HOURS=6
+# Url of your postgres database
+DATA_SOURCE_URL=""
+# postgres username
+DATA_SOURCE_USERNAME=""
+# postgres password
+DATA_SOURCE_PASSWORD=""
+```
 
-
-### 1. Run as simple jar file
+### 1. Run Application as jar file
 
 - Initialise postgresql database using [init-database.sh](.docker/init-database.sh) or [create-tables.sql](.db/create-tables.sql).
 - Build jar file and related dependencies by `mvn package`
 - Update variables in [fly-muninn.sh](fly-muninn.sh#L3-L10)
-- Make this script file executable by `chmod +x start.sh`
-- Run application in background by `/start.sh > /dev/null 2>&1 &`
+- Make this script file executable by `chmod +x fly-muninn.sh`
+- Run application in background by `/fly-muninn.sh > /dev/null 2>&1 &`
 - Check logs to see if application running correctly: `tail -f log/muninn.log`
 
-### 2. Run docker container
+### 2. Run Docker Container
 
-- Update variables in [docker-compose.yml](.docker/docker-compose.yml#L7-L14)
-- Create directories to mount log and database files: 
+- Update variables in [docker-compose.yml](.docker/docker-compose.yml#L7-L11)
+- Create directories to mount log and database directories: 
     ```shell script
     mkdir muninn
     mkdir muninn/log
@@ -66,6 +83,8 @@ Read permissions would be ok for your twitter bot as Muninn will not need any wr
 - Check log files if application running correctly: `tail -f log/muninn.log`
 - ps: application may restarts couple of times in the first time because initialisation of the database takes some time.
 
+
+### Starting Bot for Your Account
 
 After you make your Muninn up and running, you can start using your Muninn by opening your telegram app and sending your bot to a `\login` command. 
 
