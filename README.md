@@ -67,7 +67,7 @@ followings once for every 6 hours.
 - Build jar file and related dependencies by `mvn package`
 - Update variables in [fly-muninn.sh](fly-muninn.sh#L3-L10)
 - Make this script file executable by `chmod +x fly-muninn.sh`
-- Run application in background by `/fly-muninn.sh > /dev/null 2>&1 &`
+- Run application in background by `./fly-muninn.sh > /dev/null 2>&1 &`
 - Check logs to see if application running correctly: `tail -f log/muninn.log`
 
 ### 2. Run Docker Container
