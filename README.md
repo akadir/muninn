@@ -7,6 +7,11 @@
 <br />
 
 <div align="center">
+  <!-- last commit-->
+  <a href="https://img.shields.io/github/last-commit/akadir/muninn" title="Last Commit">
+     <img src="https://img.shields.io/github/last-commit/akadir/muninn?style=flat">
+  </a>
+
   <!-- CI -->
   <a href="https://github.com/akadir/muninn/workflows/CI/badge.svg">
     <img src="https://github.com/akadir/muninn/workflows/CI/badge.svg"
