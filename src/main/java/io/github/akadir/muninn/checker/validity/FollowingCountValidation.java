@@ -35,7 +35,7 @@ public class FollowingCountValidation implements AccountValidator {
 
     @Override
     public boolean validate(AuthenticatedUser user, User twitterUser, TelegramBot telegramBot) {
-        if (twitterUser.getFriendsCount() > ConfigParams.FOLLOWING_COUNT_LIMIT) {
+        if (ConfigParams.FOLLOWING_COUNT_LIMIT >= 0 && twitterUser.getFriendsCount() > ConfigParams.FOLLOWING_COUNT_LIMIT) {
             String message = messageSource.getMessage(MuninnMessage.FOLLOWING_LIMIT_REACHED.name(),
                     new Object[]{twitterUser.getFriendsCount(), ConfigParams.FOLLOWING_COUNT_LIMIT},
                     Locale.getDefault());
