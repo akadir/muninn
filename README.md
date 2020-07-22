@@ -47,7 +47,7 @@ Another requirement is `Twitter tokens`. You can get your `tokens` from
 `Read permissions` would be ok for your `Twitter App` as `Muninn` will not need any write operations regarding 
 the authenticated twitter account. 
 
-### Variable definitions
+### Docker Environment Variable definitions
 
 - __TWITTER_CONSUMER_KEY:__ Token you can get by creating twitter app
 - __TWITTER_CONSUMER_SECRET:__ Token you can get by creating twitter app
@@ -58,6 +58,8 @@ followings once for every 6 hours.
 - __DATA_SOURCE_URL:__ Url of your postgres database
 - __DATA_SOURCE_USERNAME:__ postgres username
 - __DATA_SOURCE_PASSWORD:__ postgres password
+- __FOLLOWING_COUNT_LIMIT:__ Limit for user's following count. Default 0. 0 means no limit. 
+10 means users who have more than 10 following will not be authenticated. 
 - __USER_TIMEZONE:__ default:UTC Timezone for Muninn
 ### 1. Run Application as jar file
 
