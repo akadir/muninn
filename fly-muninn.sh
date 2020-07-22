@@ -16,11 +16,18 @@ PID=`ps aux | grep -v grep | grep $PROGRAM_TYPE | awk '{print $2}'`
 
 if [ -z "$PID" ]; then
   cd "${0%/*}"
-  java -Dtwitter.consumer.key=$TWITTER_CONSUMER_KEY -Dtwitter.consumer.secret=$TWITTER_CONSUMER_SECRET \
-       -Dtelegram.token=$TELEGRAM_TOKEN -Dtelegram.bot.name=$TELEGRAM_BOT_NAME \
-       -Dmuninn.recheck.period=$MUNINN_RECHECK_PERIOD_IN_HOURS \
-       -Ddata.source.url=$DATA_SOURCE_URL -Ddata.source.username=$DATA_SOURCE_USERNAME -Ddata.source.password=$DATA_SOURCE_PASSWORD \
-       -DprogramType=$PROGRAM_TYPE -cp $DEPENDENCIES $MAIN_CLASS
+
+  echo "telegram.bot.name=$TELEGRAM_BOT_NAME
+  telegram.token=$TELEGRAM_TOKEN
+  twitter.consumer.key=$TWITTER_CONSUMER_KEY
+  twitter.consumer.secret=$TWITTER_CONSUMER_SECRET
+  muninn.recheck.period=$MUNINN_RECHECK_PERIOD_IN_HOURS
+  data.source.url=$DATA_SOURCE_URL
+  data.source.username=$DATA_SOURCE_USERNAME
+  data.source.password=$DATA_SOURCE_PASSWORD
+  following.count.limit=$FOLLOWING_COUNT_LIMIT" >> muninn.properties
+
+  java -DprogramType=$PROGRAM_TYPE -cp $DEPENDENCIES $MAIN_CLASS
 else
   echo "process running with pid:$PID"
   exit 1
